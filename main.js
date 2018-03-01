@@ -7,6 +7,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
     const createScene = function () {
         const scene = new BABYLON.Scene(engine);
+        scene.enablePhysics();
 
         //(x,y,z)
         const camera = new BABYLON.ArcRotateCamera("Camera", 0,canvas.height / 2, 10, BABYLON.Vector3.Zero(), scene);
@@ -22,8 +23,18 @@ window.addEventListener('DOMContentLoaded', function () {
 
         // const light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(0, 0, -7), scene);
 
-        const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0.1, 0, 0), scene);
+        // const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0.1, 0, 0), scene);
         // light.diffuse = new BABYLON.Color3(0, 0, 0);
+
+        const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: 20}, scene);
+        sphere.position.y = 10;
+
+        const sphereMaterial = new BABYLON.StandardMaterial("material", scene);
+        sphereMaterial.ambientColor = new BABYLON.Color3(0, .60, .58);
+        sphere.material = sphereMaterial;
+
+        const light = new BABYLON.PointLight("light", new BABYLON.Vector3(sphere.position.x, sphere.position.y, sphere.position.z), scene);
+        light.intensity = 1.5;
 
         const skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
         const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
@@ -51,24 +62,25 @@ window.addEventListener('DOMContentLoaded', function () {
         groundMaterial.bumpTexture.vScale = 60;
 
         ground.material = groundMaterial;
-        ground.position.y = 0.;
 
 
         //const sphere = BABYLON.Mesh.CreateBox("skyBox", 10.0, scene);
-        const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: 20}, scene);
-        sphere.position.x = 0;
-        sphere.position.y = 10;
-        sphere.position.z = 0;
-
-        const sphereMaterial = new BABYLON.StandardMaterial("material", scene);
-        sphereMaterial.ambientColor = new BABYLON.Color3(0, .60, .58);
-        sphere.material = sphereMaterial;
 
 
-        // const box = BABYLON.Mesh.CreateBox("box", 2, scene);
-        // box.rotation.x = -3;
-        // box.rotation.y = -4;
-        // box.position.y = -4;
+        const box = BABYLON.MeshBuilder.CreateBox("box", {height: 25, width: 35}, scene);
+        box.material = skyboxMaterial;
+        box.position.x = -30;
+        box.position.y = 10;
+
+        // CreateCylinder("name", height, top-cone, bottom-cone, edges, diameter)
+        const cylinder = BABYLON.Mesh.CreateCylinder("cylinder", 10, 20, 20, 22, 2, scene);
+        // Vector3(x,y,z) -> positions
+        cylinder.position = new BABYLON.Vector3(30, 10, 4);
+
+        const cylinderMaterial = new BABYLON.StandardMaterial("material", scene);
+        cylinderMaterial.emissiveColor = new BABYLON.Color3(1, 0.78, 0.4);
+        cylinder.material = cylinderMaterial;
+
 
 
         // const water = BABYLON.Mesh.CreateGround("water", 1000, 1000, 1, scene, false);
@@ -78,7 +90,6 @@ window.addEventListener('DOMContentLoaded', function () {
 
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
             map[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
-
         }));
 
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
@@ -90,33 +101,68 @@ window.addEventListener('DOMContentLoaded', function () {
             if ((map["w"] || map["W"])) {
                 //forward
                 sphere.position.z += 1;
+                light.position.z += 1;
             }
 
             if ((map["s"] || map["S"])) {
                 //back
                 sphere.position.z -= 1;
+                light.position.z -= 1;
             }
 
             if ((map["a"] || map["A"])) {
                 //left
                 sphere.position.x -= 1;
+                light.position.x -= 1;
             }
 
             if ((map["d"] || map["D"])) {
                 //right
                 sphere.position.x += 1;
+                light.position.x += 1;
+            }
+            if(map[" "]){
+                console.log("spacebar");
+                sphere.position.y += 3;
+                light.position.y += 1;
             }
         });
+
+        sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
+
+        ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.9 }, scene);
+
+        sphere.physicsImpostor.setLinearVelocity(new BABYLON.Vector3(1, 0, 1));
+
+
+        scene.onPointerDown = function (evt, pickResult) {
+            const cylinder = scene.getMeshByName("cylinder");
+            const sphere = scene.getMeshByName("sphere");
+            if (evt.hit) {
+                cylinder.position.x = evt.sphere.x;
+                cylinder.position.y = evt.sphere.y;
+                console.log("hit");
+                cylinder.ambientColor = new BABYLON.Color3(1, 1, 1);
+            }
+        };
+
 
         return scene;
     };
     const scene = createScene();
 
+    let t = 0;
     const renderLoop = function () {
         scene.render();
+        t -= 0.012;
         // const material = scene.getMeshByName("sphere").material;
         // material.alpha -= 0.002;
         // if(material.alpha <= 0) material.alpha = 1;
+        const sphere = scene.getMeshByName("sphere");
+        sphere.rotate(BABYLON.Axis.Z, 0.1);
+
+        const cylinder = scene.getMeshByName("cylinder");
+        cylinder.position.y = Math.sin(t*3);
 
     };
     engine.runRenderLoop(renderLoop);
