@@ -19,7 +19,7 @@ window.addEventListener('DOMContentLoaded', function () {
         camera.lowerBetaLimit = 0.1;
         //TODO look up to half canvas hieght only
         camera.upperBetaLimit = canvas.height / 2;
-        // camera.lowerRadiusLimit = 150;
+        camera.lowerRadiusLimit = 150;
 
         // const light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(0, 0, -7), scene);
 
@@ -27,14 +27,18 @@ window.addEventListener('DOMContentLoaded', function () {
         // light.diffuse = new BABYLON.Color3(0, 0, 0);
 
         const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: 20}, scene);
+
         sphere.position.y = 10;
 
         const sphereMaterial = new BABYLON.StandardMaterial("material", scene);
-        sphereMaterial.ambientColor = new BABYLON.Color3(0, .60, .58);
+        sphereMaterial.ambientColor = new BABYLON.Color3(1, 1, 1);
+        sphereMaterial.wireframe = true;
         sphere.material = sphereMaterial;
 
+        const light2 = new BABYLON.PointLight("light2", new BABYLON.Vector3(canvas.width / 2, canvas.height,0), scene);
         const light = new BABYLON.PointLight("light", new BABYLON.Vector3(sphere.position.x, sphere.position.y, sphere.position.z), scene);
-        light.intensity = 1.5;
+        light.diffuse = new BABYLON.Color3(1, 1, 1);
+        light.specular = new BABYLON.Color3(1, 1, 1);
 
         const skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
         const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
@@ -81,7 +85,15 @@ window.addEventListener('DOMContentLoaded', function () {
         cylinderMaterial.emissiveColor = new BABYLON.Color3(1, 0.78, 0.4);
         cylinder.material = cylinderMaterial;
 
+        const spriteManagerTrump = new BABYLON.SpriteManager("trumpManager", "sprites/trump_walk.png", 4, 256, scene);
+        const trump = new BABYLON.Sprite("trump", spriteManagerTrump);
+        trump.position.y = 10;
+        trump.position.z = -100;
+        trump.size = 30;
+        // trump.width = 30;
+        // trump.height = 30;
 
+        trump.playAnimation(0, 15, true, 100);
 
         // const water = BABYLON.Mesh.CreateGround("water", 1000, 1000, 1, scene, false);
 
@@ -128,11 +140,12 @@ window.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
+        // sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
+
 
         ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.9 }, scene);
 
-        sphere.physicsImpostor.setLinearVelocity(new BABYLON.Vector3(1, 0, 1));
+        // sphere.physicsImpostor.setLinearVelocity(new BABYLON.Vector3(1, 0, 1));
 
 
         scene.onPointerDown = function (evt, pickResult) {
