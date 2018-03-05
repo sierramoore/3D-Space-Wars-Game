@@ -106,22 +106,18 @@ window.addEventListener('DOMContentLoaded', function () {
             return [x,y,z];
         }
 
-
-        const resource1 = new BABYLON.MeshBuilder.CreateSphere("resource1", {diameter: 15}, scene);
-        resource1.material = new BABYLON.StandardMaterial("resourceMaterial1", scene);
-        resource1.material.diffuseColor = new BABYLON.Color3(0,0,1);
-        const [x, y, z] = randomSpherePoint(0,0,0);
-        resource1.position = new BABYLON.Vector3(x, y, z);
-
-
-        const resources = [resource1, resource2];
-        // select random resource
-        const resourceGenerator = function(){
-            let randomIndex = Math.floor(Math.random() * 2);
-            return resources[randomIndex];
+        const resources = [];
+        const resourceGenerator = function() {
+            for(let i =0; i < 6; i++){
+                const resource = new BABYLON.MeshBuilder.CreateSphere("resource", {diameter: 15}, scene);
+                resource.material = new BABYLON.StandardMaterial("resourceMaterial", scene);
+                resource.material.diffuseColor = new BABYLON.Color3(0,0,1);
+                const [x, y, z] = randomSpherePoint(0,0,0);
+                resource.position = new BABYLON.Vector3(x, y, z);
+                resources.push(resource);
+            }
         };
-        console.log(resourceGenerator());
-
+        resourceGenerator();
 
 
         let map = {}; //object for multiple key presses
@@ -135,7 +131,7 @@ window.addEventListener('DOMContentLoaded', function () {
             map[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
         }));
 
-        
+
         scene.registerAfterRender(function () {
             // skybox.position = camera.position;
             // -----MOVE-----(can use two keys at once to move diagonally)
