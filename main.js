@@ -2,6 +2,37 @@ window.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById("renderCanvas");
     const engine = new BABYLON.Engine(canvas, true);
 
+    /////////// debug visuals --axis lines
+    const createAxe = function (x, y, z, size, scene) {
+        const axe = BABYLON.Mesh.CreateLines("axisX", [
+            new BABYLON.Vector3.Zero(),
+            new BABYLON.Vector3(size*x, size*y, size*z)
+        ], scene);
+        axe.color = new BABYLON.Color3(x, y, z);
+        return axe;
+    };
+
+    const createAxis = function (size, scene) {
+        const node = new BABYLON.TransformNode("root");
+        createAxe(1, 0, 0, size, scene).parent = node;
+        createAxe(0, 1, 0, size, scene).parent = node;
+        createAxe(0, 0, 1, size, scene).parent = node;
+        return node;
+    };
+    //////////////////////
+
+
+    const planetRadius = 150;
+
+    const landPoint = function (p) {
+        return BABYLON.Vector3.Normalize(p).scale(planetRadius);
+    };
+
+    const moveCharacter = function(character, speed, x, z) {
+        character.rotation.y = Math.atan2(x, z);
+        character.parent.rotate(new BABYLON.Vector3(z, 0, -x).normalize(), speed, BABYLON.Space.LOCAL);
+    };
+
 
     const createScene = function () {
         const scene = new BABYLON.Scene(engine);
@@ -24,7 +55,7 @@ window.addEventListener('DOMContentLoaded', function () {
         skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
         skybox.material = skyboxMaterial;
 
-        const planet = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: 300}, scene);
+        const planet = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: planetRadius * 2}, scene);
         planet.rotation.y = -2;
         const planetMtl = new BABYLON.StandardMaterial("planet", scene);
         planetMtl.diffuseTexture = new BABYLON.Texture("textures/planet/moon.jpg", scene);
@@ -45,6 +76,18 @@ window.addEventListener('DOMContentLoaded', function () {
         directionalLight1.specular = new BABYLON.Color3(0.2, 0.2, 0.3);
         directionalLight1.intensity = 1.5;
 
+
+        //charaterRoot is the inner basis in the sphere on which the charater moves
+        const charaterRoot = new BABYLON.TransformNode("root");
+        charaterRoot.rotation.x = -Math.PI / 2;
+        const charater = new BABYLON.MeshBuilder.CreateSphere('charater', {diameter: 10}, scene);
+        charater.parent = charaterRoot;
+        charater.position.y = planetRadius;//landPoint(new BABYLON.Vector3(0, 0, -1));
+        charater.material = new BABYLON.StandardMaterial('charaterMaterial', scene);
+        charater.material.diffuseColor = new BABYLON.Color3(1,0,1);
+        createAxis(20, scene).parent = charater;
+
+
         let map = {}; //object for multiple key presses
         scene.actionManager = new BABYLON.ActionManager(scene);
 
@@ -61,44 +104,42 @@ window.addEventListener('DOMContentLoaded', function () {
         scene.registerAfterRender(function () {
             skybox.position = camera.position;
             // -----MOVE-----(can use two keys at once to move diagonally)
+            let speed = 0.01;
+            let hor = 0;
+            let ver = 0;
 
+            //forward
             if ((map["w"] || map["W"])) {
-                //forward
-                trumpWalk.position.z += 1;
-                trumpWalk.invertU = -1;
-                trumpWalk.playAnimation(0, 9, true, 110);
-                light.position.z += 1;
+                ver += 1;
             }
 
+            //back
             if ((map["s"] || map["S"])) {
-                //back
-                trumpWalk.position.z -= 1;
-                trumpWalk.playAnimation(0, 9, true, 110);
-                light.position.z -= 1;
+                ver += -1;
             }
 
+            //left
             if ((map["a"] || map["A"])) {
-                //left
-                trumpWalk.position.x -= 1;
-                trumpWalk.invertU = -1;
-                trumpWalk.playAnimation(10, 16, true, 110);
-                light.position.x -= 1;
+                hor += -1;
             }
 
+            //right
             if ((map["d"] || map["D"])) {
-                //right
-                trumpWalk.position.x += 1;
-                light.position.x += 1;
-                trumpWalk.invertU = 0;
-                trumpWalk.playAnimation(10, 16, true, 110);
-            }
-            if (map[" "]) {
-                console.log("spacebar");
-                trumpWalk.position.y += 3;
-                trumpWalk.playAnimation(0, 9, true, 110);
-                light.position.y += 1;
+                hor += 1;
             }
 
+            //jump
+            if (map[" "]) {
+                //charater.position.y += 3;
+                // light.position.y += 1;
+            }
+
+            if (map["Shift"]) {
+                speed *= 10;
+            }
+            if (hor !== 0 || ver !== 0) {
+                moveCharacter(charater, speed, hor, ver);
+            }
         });
 
 
