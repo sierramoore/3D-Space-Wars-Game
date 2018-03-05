@@ -1,3 +1,4 @@
+let resource2;
 window.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById("renderCanvas");
     const engine = new BABYLON.Engine(canvas, true);
@@ -38,15 +39,17 @@ window.addEventListener('DOMContentLoaded', function () {
         const scene = new BABYLON.Scene(engine);
         scene.enablePhysics();
 
-        const camera = new BABYLON.ArcRotateCamera("Camera", 0,canvas.height / 2, 10, BABYLON.Vector3.Zero(), scene);
-        camera.setPosition(new BABYLON.Vector3(0, 0, -500));
+
+        const camera = new BABYLON.ArcRotateCamera("Camera", 0, canvas.height/2, 10, BABYLON.Vector3.Zero(), scene);
+        camera.setPosition(new BABYLON.Vector3(0, 0, 500));
         camera.attachControl(canvas, false);
-        camera.lowerBetaLimit = 0.1;
-        camera.upperBetaLimit = canvas.height / 2;
+        // camera.lowerBetaLimit = 0.1;
+        // camera.upperBetaLimit = canvas.height / 2;
         camera.lowerRadiusLimit = 150;
 
 
         const skybox = BABYLON.Mesh.CreateBox("skybox", 10000.0, scene);
+        createAxis(200, scene).parent = skybox;
         const skyboxMaterial = new BABYLON.StandardMaterial("skybox", scene);
         skyboxMaterial.backFaceCulling = false;
         skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox/sky", scene, ["_px.png", "_py.png", "_pz.png", "_nx.png","_ny.png", "_nz.png"]);
@@ -87,6 +90,39 @@ window.addEventListener('DOMContentLoaded', function () {
         charater.material.diffuseColor = new BABYLON.Color3(1,0,1);
         createAxis(20, scene).parent = charater;
 
+        // const camera = new BABYLON.ArcFollowCamera("characterCamera", Math.PI/2, 0.1, 500, charater, scene);
+        camera.parent = charaterRoot;
+        // console.log(charaterRoot.rotation.x)
+
+
+        function randomSpherePoint(x0,y0,z0){
+            let u = Math.random();
+            let v = Math.random();
+            let theta = 2 * Math.PI * u;
+            let phi = Math.acos(2 * v - 1);
+            let x = x0 + (planetRadius * Math.sin(phi) * Math.cos(theta));
+            let y = y0 + (planetRadius * Math.sin(phi) * Math.sin(theta));
+            let z = z0 + (planetRadius * Math.cos(phi));
+            return [x,y,z];
+        }
+
+
+        const resource1 = new BABYLON.MeshBuilder.CreateSphere("resource1", {diameter: 15}, scene);
+        resource1.material = new BABYLON.StandardMaterial("resourceMaterial1", scene);
+        resource1.material.diffuseColor = new BABYLON.Color3(0,0,1);
+        const [x, y, z] = randomSpherePoint(0,0,0);
+        resource1.position = new BABYLON.Vector3(x, y, z);
+
+
+        const resources = [resource1, resource2];
+        // select random resource
+        const resourceGenerator = function(){
+            let randomIndex = Math.floor(Math.random() * 2);
+            return resources[randomIndex];
+        };
+        console.log(resourceGenerator());
+
+
 
         let map = {}; //object for multiple key presses
         scene.actionManager = new BABYLON.ActionManager(scene);
@@ -99,10 +135,9 @@ window.addEventListener('DOMContentLoaded', function () {
             map[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
         }));
 
-
-
+        
         scene.registerAfterRender(function () {
-            skybox.position = camera.position;
+            // skybox.position = camera.position;
             // -----MOVE-----(can use two keys at once to move diagonally)
             let speed = 0.01;
             let hor = 0;
