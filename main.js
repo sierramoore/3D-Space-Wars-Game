@@ -1,4 +1,4 @@
-let resource2;
+
 window.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById("renderCanvas");
     const engine = new BABYLON.Engine(canvas, true);
@@ -24,6 +24,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
 
     const planetRadius = 150;
+    const resourceAmount = 12;
 
     const landPoint = function (p) {
         return BABYLON.Vector3.Normalize(p).scale(planetRadius);
@@ -95,33 +96,43 @@ window.addEventListener('DOMContentLoaded', function () {
         // console.log(charaterRoot.rotation.x)
 
 
-        function randomSpherePoint(x0,y0,z0){
+        function randomSpherePoint(){
             let u = Math.random();
             let v = Math.random();
             let theta = 2 * Math.PI * u;
             let phi = Math.acos(2 * v - 1);
-            let x = x0 + (planetRadius * Math.sin(phi) * Math.cos(theta));
-            let y = y0 + (planetRadius * Math.sin(phi) * Math.sin(theta));
-            let z = z0 + (planetRadius * Math.cos(phi));
-            return [x,y,z];
+            let x = (planetRadius * Math.sin(phi) * Math.cos(theta));
+            let y = (planetRadius * Math.sin(phi) * Math.sin(theta));
+            let z = (planetRadius * Math.cos(phi));
+            return new BABYLON.Vector3(x, y, z);
         }
 
         const resources = [];
+        let captured = false;
         const resourceGenerator = function() {
-            for(let i =0; i < 6; i++){
+            for(let i =0; i < resourceAmount; i++){
                 const resource = new BABYLON.MeshBuilder.CreateSphere("resource", {diameter: 15}, scene);
                 resource.material = new BABYLON.StandardMaterial("resourceMaterial", scene);
-                resource.material.diffuseColor = new BABYLON.Color3(0,0,1);
-                const [x, y, z] = randomSpherePoint(0,0,0);
-                resource.position = new BABYLON.Vector3(x, y, z);
+                // resource.material.diffuseColor = new BABYLON.Color3(0,0,1);
+                resource.position = randomSpherePoint();
                 resources.push(resource);
             }
         };
         resourceGenerator();
 
+        // The trigger is OnIntersectionEnterTrigger
+        const trigger = {trigger:BABYLON.ActionManager.OnIntersectionEnterTrigger, parameter: resources};
+
+        let takenResource = new BABYLON.SwitchBooleanAction(trigger, resources, "taken");
+
+
 
         let map = {}; //object for multiple key presses
         scene.actionManager = new BABYLON.ActionManager(scene);
+        scene.fogEnabled = true;
+        scene.fogColor = new BABYLON.Color3(1., 0., 0.);
+        scene.fogDensity = 10;
+        scene.fogDensity = 10;
 
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
             map[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
@@ -132,12 +143,28 @@ window.addEventListener('DOMContentLoaded', function () {
         }));
 
 
+
         scene.registerAfterRender(function () {
-            // skybox.position = camera.position;
+
+        });
+
+        scene.registerAfterRender(function () {
+            // sets skybox to camera so u cant zoom past skybox
+            skybox.position = camera.position;
             // -----MOVE-----(can use two keys at once to move diagonally)
             let speed = 0.01;
             let hor = 0;
             let ver = 0;
+
+            for (let i = 0; i < resources.length; i++) {
+                if(charater.intersectsMesh(resources[i], false)) {
+                    captured = true;
+                    resources[i].material.diffuseColor = new BABYLON.Color3(0, 0, 1);
+
+                } else {
+                    captured = false;
+                }
+            }
 
             //forward
             if ((map["w"] || map["W"])) {
