@@ -40,14 +40,10 @@ window.addEventListener('DOMContentLoaded', function () {
         const scene = new BABYLON.Scene(engine);
         scene.enablePhysics();
 
-
         const camera = new BABYLON.ArcRotateCamera("Camera", 0, canvas.height/2, 10, BABYLON.Vector3.Zero(), scene);
-        camera.setPosition(new BABYLON.Vector3(0, 0, 500));
+        camera.setPosition(new BABYLON.Vector3(0,500,100));
         camera.attachControl(canvas, false);
-        // camera.lowerBetaLimit = 0.1;
-        // camera.upperBetaLimit = canvas.height / 2;
         camera.lowerRadiusLimit = 150;
-
 
         const skybox = BABYLON.Mesh.CreateBox("skybox", 10000.0, scene);
         createAxis(200, scene).parent = skybox;
@@ -91,10 +87,7 @@ window.addEventListener('DOMContentLoaded', function () {
         charater.material.diffuseColor = new BABYLON.Color3(1,0,1);
         createAxis(20, scene).parent = charater;
 
-        // const camera = new BABYLON.ArcFollowCamera("characterCamera", Math.PI/2, 0.1, 500, charater, scene);
         camera.parent = charaterRoot;
-        // console.log(charaterRoot.rotation.x)
-
 
         function randomSpherePoint(){
             let u = Math.random();
@@ -108,31 +101,24 @@ window.addEventListener('DOMContentLoaded', function () {
         }
 
         const resources = [];
-        let captured = false;
+
         const resourceGenerator = function() {
             for(let i =0; i < resourceAmount; i++){
                 const resource = new BABYLON.MeshBuilder.CreateSphere("resource", {diameter: 15}, scene);
                 resource.material = new BABYLON.StandardMaterial("resourceMaterial", scene);
-                // resource.material.diffuseColor = new BABYLON.Color3(0,0,1);
+                resource.captured = false;
                 resource.position = randomSpherePoint();
                 resources.push(resource);
             }
         };
         resourceGenerator();
 
-        // The trigger is OnIntersectionEnterTrigger
-        const trigger = {trigger:BABYLON.ActionManager.OnIntersectionEnterTrigger, parameter: resources};
-
-        let takenResource = new BABYLON.SwitchBooleanAction(trigger, resources, "taken");
-
-
-
         let map = {}; //object for multiple key presses
         scene.actionManager = new BABYLON.ActionManager(scene);
-        scene.fogEnabled = true;
-        scene.fogColor = new BABYLON.Color3(1., 0., 0.);
-        scene.fogDensity = 10;
-        scene.fogDensity = 10;
+        // scene.fogEnabled = true;
+        // scene.fogColor = new BABYLON.Color3(1., 0., 0.);
+        // scene.fogDensity = 10;
+        // scene.fogDensity = 10;
 
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
             map[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
@@ -143,10 +129,26 @@ window.addEventListener('DOMContentLoaded', function () {
         }));
 
 
-
         scene.registerAfterRender(function () {
-
+            for (let i = 0; i < resources.length; i++) {
+                if(!resources[i].captured){
+                    if(charater.intersectsMesh(resources[i], false)) {
+                        resources[i].captured = true;
+                        resources[i].material.diffuseColor = new BABYLON.Color3(0, 0, 1);
+                    }
+                }
+            }
         });
+
+        const capturedResourceCount = function (){
+            let capturedResources = 0;
+            for(let i=0; i < resources.length; i++){
+                if(resources[i].captured){
+                    capturedResources++;
+                }
+            }
+            return capturedResources;
+        };
 
         scene.registerAfterRender(function () {
             // sets skybox to camera so u cant zoom past skybox
@@ -155,16 +157,6 @@ window.addEventListener('DOMContentLoaded', function () {
             let speed = 0.01;
             let hor = 0;
             let ver = 0;
-
-            for (let i = 0; i < resources.length; i++) {
-                if(charater.intersectsMesh(resources[i], false)) {
-                    captured = true;
-                    resources[i].material.diffuseColor = new BABYLON.Color3(0, 0, 1);
-
-                } else {
-                    captured = false;
-                }
-            }
 
             //forward
             if ((map["w"] || map["W"])) {
@@ -188,8 +180,8 @@ window.addEventListener('DOMContentLoaded', function () {
 
             //jump
             if (map[" "]) {
-                //charater.position.y += 3;
-                // light.position.y += 1;
+                const count = capturedResourceCount();
+                console.log("Captured =", count, "/", resources.length);
             }
 
             if (map["Shift"]) {
