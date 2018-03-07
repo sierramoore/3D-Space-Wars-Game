@@ -86,6 +86,10 @@ window.addEventListener('DOMContentLoaded', function () {
         //charaterRoot is the inner basis in the sphere on which the charater moves
         const charaterRoot = new BABYLON.TransformNode("root");
         charaterRoot.rotation.x = -Math.PI / 2;
+
+        const charaterRoot2 = new BABYLON.TransformNode("root2");
+        charaterRoot2.rotation.x = -Math.PI / 2;
+
         const charater = new BABYLON.MeshBuilder.CreateSphere('charater', {diameter: 10}, scene);
         charater.parent = charaterRoot;
         charater.position.y = planetRadius;
@@ -223,6 +227,8 @@ window.addEventListener('DOMContentLoaded', function () {
             map[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
         }));
 
+
+
         let player1Points = 0;
         let player2Points = 0;
         scene.registerAfterRender(function () {
@@ -236,6 +242,7 @@ window.addEventListener('DOMContentLoaded', function () {
                         particleSystem.emitter = resources[i];
                         particleSystem.color1 = new BABYLON.Color4(0, 0, 1, .80);
 
+                        document.getElementById('p1score').innerText = player1Points;
                         return player1Points;
                     }
                     if(charater2.intersectsMesh(resources[i], false)){
@@ -244,8 +251,11 @@ window.addEventListener('DOMContentLoaded', function () {
                         particleSystem.emitter = resources[i];
                         particleSystem.color1 = new BABYLON.Color4(1, 0, 0, .80);
 
+                        document.getElementById('p2score').innerText = player2Points;
                         return player2Points;
                     }
+                    let leftOver =  resources.length - player1Points + player2Points;
+                    document.getElementById('leftOver').innerText = leftOver;
                 }
             }
 
