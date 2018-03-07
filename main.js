@@ -26,6 +26,7 @@ window.addEventListener('DOMContentLoaded', function () {
     const planetRadius = 150;
     const resourceAmount = 12;
 
+    // pass a point and will land it on the planet
     const landPoint = function (p) {
         return BABYLON.Vector3.Normalize(p).scale(planetRadius);
     };
@@ -38,15 +39,14 @@ window.addEventListener('DOMContentLoaded', function () {
 
     const createScene = function () {
         const scene = new BABYLON.Scene(engine);
-        scene.enablePhysics();
+        // scene.enablePhysics();
 
         const camera = new BABYLON.ArcRotateCamera("Camera", 0, canvas.height/2, 10, BABYLON.Vector3.Zero(), scene);
-        camera.setPosition(new BABYLON.Vector3(0,500,100));
+        //camera.setPosition(new BABYLON.Vector3(0,500,100));
         camera.attachControl(canvas, false);
         camera.lowerRadiusLimit = 150;
 
         const skybox = BABYLON.Mesh.CreateBox("skybox", 10000.0, scene);
-        createAxis(200, scene).parent = skybox;
         const skyboxMaterial = new BABYLON.StandardMaterial("skybox", scene);
         skyboxMaterial.backFaceCulling = false;
         skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox/sky", scene, ["_px.png", "_py.png", "_pz.png", "_nx.png","_ny.png", "_nz.png"]);
@@ -56,6 +56,7 @@ window.addEventListener('DOMContentLoaded', function () {
         skybox.material = skyboxMaterial;
 
         const planet = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: planetRadius * 2}, scene);
+        createAxis(200, scene).parent = planet;
         planet.rotation.y = -2;
         const planetMtl = new BABYLON.StandardMaterial("planet", scene);
         planetMtl.diffuseTexture = new BABYLON.Texture("textures/planet/moon.jpg", scene);
@@ -76,18 +77,49 @@ window.addEventListener('DOMContentLoaded', function () {
         directionalLight1.specular = new BABYLON.Color3(0.2, 0.2, 0.3);
         directionalLight1.intensity = 1.5;
 
+        // const text1 = new BABYLON.GUI.TextBlock();
+        // text1.text = "Player1:";
+        // text1.color = "red";
+        // text1.fontSize = 24;
+        // text1.titleTextAlign = "left";
+        // text1.position = new BABYLON.Vector3(0,-400,100)
+        // TextBlock.addControl(text1);
+
+        // new DynamicTexture(name, options, scene, generateMipMaps, samplingMode, format)
+        // drawText(text, x, y, font, color, clearColor, invertY, update)
+        // const player1Text = new DynamicTexture("player1", planet, scene, true, 20);
+        // const player1 = new drawText();
+        
 
         //charaterRoot is the inner basis in the sphere on which the charater moves
         const charaterRoot = new BABYLON.TransformNode("root");
         charaterRoot.rotation.x = -Math.PI / 2;
         const charater = new BABYLON.MeshBuilder.CreateSphere('charater', {diameter: 10}, scene);
         charater.parent = charaterRoot;
-        charater.position.y = planetRadius;//landPoint(new BABYLON.Vector3(0, 0, -1));
+        charater.position.y = planetRadius;
         charater.material = new BABYLON.StandardMaterial('charaterMaterial', scene);
         charater.material.diffuseColor = new BABYLON.Color3(1,0,1);
         createAxis(20, scene).parent = charater;
 
         camera.parent = charaterRoot;
+        camera.setPosition(new BABYLON.Vector3(0,500,-50));
+
+        // const assetsManager = new BABYLON.AssetsManager(scene);
+        // const meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/crystal/", "crystal.babylon");
+        // meshTask.onSuccess = function (task) {
+        //     task.loadedMeshes[0].position = landPoint(new BABYLON.Vector3(1, 0, 0));
+        //     task.loadedMeshes[0].scaling = new BABYLON.Vector3(5, 5, 5);
+        //     task.loadedMeshes[0].rotation.x = -Math.PI/2;
+        //     task.loadedMeshes[0].clone("sdfsd").position = landPoint(new BABYLON.Vector3(0, 1, 0));
+        // };
+
+        // const imageTask = assetsManager.addImageTask("image task", "textures/crystal/crystal.png");
+        // imageTask.size =30;
+        // imageTask.onSuccess = function(task) {
+        //     console.log(task.image.width);
+        // };
+        // assetsManager.load();
+
 
         function randomSpherePoint(){
             let u = Math.random();
@@ -100,15 +132,31 @@ window.addEventListener('DOMContentLoaded', function () {
             return new BABYLON.Vector3(x, y, z);
         }
 
+        const assetsManager = new BABYLON.AssetsManager(scene);
+        const meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/crystal/", "crystal.babylon");
         const resources = [];
-
         const resourceGenerator = function() {
             for(let i =0; i < resourceAmount; i++){
-                const resource = new BABYLON.MeshBuilder.CreateSphere("resource", {diameter: 15}, scene);
-                resource.material = new BABYLON.StandardMaterial("resourceMaterial", scene);
-                resource.captured = false;
-                resource.position = randomSpherePoint();
-                resources.push(resource);
+                // const resource = new BABYLON.MeshBuilder.CreateSphere("resource", {diameter: 15}, scene);
+                // resource.material = new BABYLON.StandardMaterial("resourceMaterial", scene);
+                // resource.captured = false;
+                // resource.position = randomSpherePoint();
+                // resources.push(resource);
+
+                meshTask.onSuccess = function (task) {
+                    task.loadedMeshes[0].position = landPoint(new BABYLON.Vector3(1, 0, 0));
+                    task.loadedMeshes[0].scaling = new BABYLON.Vector3(5, 5, 5);
+                    // task.loadedMeshes[0].rotation.x = -Math.PI/2;
+                    // task.loadedMeshes[0].rotation.y = 190;
+                    // task.loadedMeshes[0].rotation.y = -Math.PI/2;
+                    task.loadedMeshes[0].clone("sdfsd").position = landPoint(new BABYLON.Vector3(1, 1, 1));
+                    task.loadedMeshes[0].captured = false;
+                    task.loadedMeshes[0].material = new BABYLON.StandardMaterial("resourceMaterial", scene);
+                    task.loadedMeshes[0].position = randomSpherePoint();
+                    task.loadedMeshes[0].push(resource);
+                };
+                assetsManager.load();
+
             }
         };
         resourceGenerator();
@@ -135,6 +183,7 @@ window.addEventListener('DOMContentLoaded', function () {
                     if(charater.intersectsMesh(resources[i], false)) {
                         resources[i].captured = true;
                         resources[i].material.diffuseColor = new BABYLON.Color3(0, 0, 1);
+                        // console.log(resources[i])
                     }
                 }
             }
@@ -197,14 +246,14 @@ window.addEventListener('DOMContentLoaded', function () {
     };
     const scene = createScene();
 
-    const renderLoop = function () {
+    window.focus();
+    engine.runRenderLoop(() => {
         scene.render();
-    };
-    engine.runRenderLoop(renderLoop);
-
-
-    window.addEventListener("resize", function () { // for smooth resizing
-        engine.resize();
     });
+
+
+    // window.addEventListener("resize", function () { // for smooth resizing
+    //     engine.resize();
+    // });
 });
 
