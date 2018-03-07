@@ -3,6 +3,11 @@ window.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById("renderCanvas");
     const engine = new BABYLON.Engine(canvas, true);
 
+    const scriptGUI = document.createElement("script");
+    scriptGUI.id = "CASTORGUI";
+    scriptGUI.src = "http://www.babylon.actifgames.com/demoCastorGUI/castorGUI.min.js";
+    document.body.appendChild(scriptGUI);
+
     /////////// debug visuals --axis lines
     const createAxe = function (x, y, z, size, scene) {
         const axe = BABYLON.Mesh.CreateLines("axisX", [
@@ -77,19 +82,6 @@ window.addEventListener('DOMContentLoaded', function () {
         directionalLight1.specular = new BABYLON.Color3(0.2, 0.2, 0.3);
         directionalLight1.intensity = 1.5;
 
-        // const text1 = new BABYLON.GUI.TextBlock();
-        // text1.text = "Player1:";
-        // text1.color = "red";
-        // text1.fontSize = 24;
-        // text1.titleTextAlign = "left";
-        // text1.position = new BABYLON.Vector3(0,-400,100)
-        // TextBlock.addControl(text1);
-
-        // new DynamicTexture(name, options, scene, generateMipMaps, samplingMode, format)
-        // drawText(text, x, y, font, color, clearColor, invertY, update)
-        // const player1Text = new DynamicTexture("player1", planet, scene, true, 20);
-        // const player1 = new drawText();
-        
 
         //charaterRoot is the inner basis in the sphere on which the charater moves
         const charaterRoot = new BABYLON.TransformNode("root");
@@ -133,7 +125,7 @@ window.addEventListener('DOMContentLoaded', function () {
         }
 
         const assetsManager = new BABYLON.AssetsManager(scene);
-        const meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/crystal/", "crystal.babylon");
+        let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/crystal/", "crystal.babylon");
         const resources = [];
         const resourceGenerator = function() {
             for(let i =0; i < resourceAmount; i++){
@@ -143,23 +135,25 @@ window.addEventListener('DOMContentLoaded', function () {
                 // resource.position = randomSpherePoint();
                 // resources.push(resource);
 
+
                 meshTask.onSuccess = function (task) {
-                    task.loadedMeshes[0].position = landPoint(new BABYLON.Vector3(1, 0, 0));
-                    task.loadedMeshes[0].scaling = new BABYLON.Vector3(5, 5, 5);
+                    const resource = task.loadedMeshes[0];
+                    resource.position = landPoint(new BABYLON.Vector3(1, 0, 0));
+                    resource.scaling = new BABYLON.Vector3(5, 5, 5);
                     // task.loadedMeshes[0].rotation.x = -Math.PI/2;
-                    // task.loadedMeshes[0].rotation.y = 190;
-                    // task.loadedMeshes[0].rotation.y = -Math.PI/2;
-                    task.loadedMeshes[0].clone("sdfsd").position = landPoint(new BABYLON.Vector3(1, 1, 1));
-                    task.loadedMeshes[0].captured = false;
-                    task.loadedMeshes[0].material = new BABYLON.StandardMaterial("resourceMaterial", scene);
-                    task.loadedMeshes[0].position = randomSpherePoint();
-                    task.loadedMeshes[0].push(resource);
+                    resource.clone("sdfsd").position = landPoint(new BABYLON.Vector3(1, 1, 1));
+                    resource.captured = false;
+                    resource.material = new BABYLON.StandardMaterial("resourceMaterial", scene);
+                    resource.position = randomSpherePoint();
+                    resources.push(resource);
+
                 };
                 assetsManager.load();
 
             }
         };
         resourceGenerator();
+        console.log(resources);
 
         let map = {}; //object for multiple key presses
         scene.actionManager = new BABYLON.ActionManager(scene);
@@ -177,11 +171,13 @@ window.addEventListener('DOMContentLoaded', function () {
         }));
 
 
+
         scene.registerAfterRender(function () {
             for (let i = 0; i < resources.length; i++) {
                 if(!resources[i].captured){
                     if(charater.intersectsMesh(resources[i], false)) {
                         resources[i].captured = true;
+
                         resources[i].material.diffuseColor = new BABYLON.Color3(0, 0, 1);
                         // console.log(resources[i])
                     }
@@ -192,6 +188,7 @@ window.addEventListener('DOMContentLoaded', function () {
         const capturedResourceCount = function (){
             let capturedResources = 0;
             for(let i=0; i < resources.length; i++){
+                console.log(resources[i]);
                 if(resources[i].captured){
                     capturedResources++;
                 }
@@ -229,7 +226,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
             //jump
             if (map[" "]) {
-                const count = capturedResourceCount();
+                let count = capturedResourceCount();
                 console.log("Captured =", count, "/", resources.length);
             }
 
@@ -251,9 +248,8 @@ window.addEventListener('DOMContentLoaded', function () {
         scene.render();
     });
 
-
-    // window.addEventListener("resize", function () { // for smooth resizing
-    //     engine.resize();
-    // });
+    window.addEventListener("resize", function () { // for smooth resizing
+        engine.resize();
+    });
 });
 
