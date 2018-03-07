@@ -98,7 +98,7 @@ window.addEventListener('DOMContentLoaded', function () {
         createAxis(20, scene).parent = charater;
 
         const charater2 = new BABYLON.MeshBuilder.CreateSphere('charater2', {diameter: 10}, scene);
-        charater2.parent = charaterRoot;
+        charater2.parent = charaterRoot2;
         charater2.position = randomSpherePoint(new BABYLON.Vector3(0,1,0));
         charater2.material = new BABYLON.StandardMaterial('charaterMaterial', scene);
         charater2.material.diffuseColor = new BABYLON.Color3(0,0,1);
@@ -196,20 +196,20 @@ window.addEventListener('DOMContentLoaded', function () {
         };
 
 
-        const board = BABYLON.Mesh.CreatePlane("board", 155, scene, false);
-        board.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
-        board.material = new BABYLON.StandardMaterial("boardMaterial", scene);
-        board.position = new BABYLON.Vector3(-100, 300, 100);
-        board.scaling.y = 0.4;
-
-        const boardTexture = new BABYLON.DynamicTexture("dynamic texture", 712, scene, true);
-        board.material.diffuseTexture = boardTexture;
-        board.material.specularColor = new BABYLON.Color3(0, 0, 0);
-        board.material.emissiveColor = new BABYLON.Color3(1, 1, 1);
-        board.material.backFaceCulling = false;
-
-        boardTexture.drawText("Player 1 Score:", null, 240, "bold 80px verdana", "white");
-        boardTexture.hasAlpha = true;
+        // const board = BABYLON.Mesh.CreatePlane("board", 155, scene, false);
+        // board.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
+        // board.material = new BABYLON.StandardMaterial("boardMaterial", scene);
+        // board.position = new BABYLON.Vector3(-100, 300, 100);
+        // board.scaling.y = 0.4;
+        //
+        // const boardTexture = new BABYLON.DynamicTexture("dynamic texture", 712, scene, true);
+        // board.material.diffuseTexture = boardTexture;
+        // board.material.specularColor = new BABYLON.Color3(0, 0, 0);
+        // board.material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+        // board.material.backFaceCulling = false;
+        //
+        // boardTexture.drawText("Player 1 Score:", null, 240, "bold 80px verdana", "white");
+        // boardTexture.hasAlpha = true;
 
 
         let map = {}; //object for multiple key presses
