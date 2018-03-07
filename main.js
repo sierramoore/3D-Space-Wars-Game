@@ -93,8 +93,16 @@ window.addEventListener('DOMContentLoaded', function () {
         charater.material.diffuseColor = new BABYLON.Color3(1,0,1);
         createAxis(20, scene).parent = charater;
 
+        const charater2 = new BABYLON.MeshBuilder.CreateSphere('charater2', {diameter: 10}, scene);
+        charater2.parent = charaterRoot;
+        charater2.position = randomSpherePoint(new BABYLON.Vector3(0,1,0));
+        charater2.material = new BABYLON.StandardMaterial('charaterMaterial', scene);
+        charater2.material.diffuseColor = new BABYLON.Color3(0,0,1);
+
         camera.parent = charaterRoot;
         camera.setPosition(new BABYLON.Vector3(0,500,-50));
+
+
 
         // const assetsManager = new BABYLON.AssetsManager(scene);
         // const meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/crystal/", "crystal.babylon");
@@ -124,36 +132,81 @@ window.addEventListener('DOMContentLoaded', function () {
             return new BABYLON.Vector3(x, y, z);
         }
 
+        const particleSystem = new BABYLON.ParticleSystem("particles", 2000, scene);
+        particleSystem.particleTexture = new BABYLON.Texture("textures/flare.png", scene);
+        // particleSystem.textureMask = new BABYLON.Color4(0.1, 0.8, 0.8, 1.0);
+        particleSystem.emitter = landPoint(new BABYLON.Vector3(0,0,0));
+        particleSystem.start();
+        particleSystem.minSize = 5;
+        particleSystem.maxHeight = 2;
+        particleSystem.emitRate = 500;
+        particleSystem.minEmitPower = 5;
+        particleSystem.maxEmitPower = 50;
+        particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+
+
+
         const assetsManager = new BABYLON.AssetsManager(scene);
         let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/crystal/", "crystal.babylon");
         const resources = [];
         const resourceGenerator = function() {
             for(let i =0; i < resourceAmount; i++){
-                // const resource = new BABYLON.MeshBuilder.CreateSphere("resource", {diameter: 15}, scene);
-                // resource.material = new BABYLON.StandardMaterial("resourceMaterial", scene);
-                // resource.captured = false;
-                // resource.position = randomSpherePoint();
-                // resources.push(resource);
-
 
                 meshTask.onSuccess = function (task) {
                     const resource = task.loadedMeshes[0];
                     resource.position = landPoint(new BABYLON.Vector3(1, 0, 0));
                     resource.scaling = new BABYLON.Vector3(5, 5, 5);
-                    // task.loadedMeshes[0].rotation.x = -Math.PI/2;
+                    resource.rotation.x = -Math.PI/2;
                     resource.clone("sdfsd").position = landPoint(new BABYLON.Vector3(1, 1, 1));
                     resource.captured = false;
                     resource.material = new BABYLON.StandardMaterial("resourceMaterial", scene);
                     resource.position = randomSpherePoint();
                     resources.push(resource);
-
                 };
                 assetsManager.load();
 
             }
         };
         resourceGenerator();
-        console.log(resources);
+
+
+        // const capturedResourceCount = function (){
+        //     let capturedResources = 0;
+        //     for(let i=0; i < resources.length; i++){
+        //         if(resources[i].captured){
+        //             capturedResources++;
+        //         }
+        //     }
+        //     return capturedResources;
+        // };
+
+        const capturedResourceCount = function (){
+            //if charater 1 intersects rescource and its captured 1 point for palyer
+            let capturedResources = 0;
+            for(let i=0; i < resources.length; i++){
+                if(resources[i].captured){
+                    capturedResources++;
+                }
+            }
+            return capturedResources;
+        };
+
+
+        const board = BABYLON.Mesh.CreatePlane("board", 155, scene, false);
+        board.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
+        board.material = new BABYLON.StandardMaterial("boardMaterial", scene);
+        board.position = new BABYLON.Vector3(-100, 300, 100);
+        board.scaling.y = 0.4;
+
+        const boardTexture = new BABYLON.DynamicTexture("dynamic texture", 712, scene, true);
+        board.material.diffuseTexture = boardTexture;
+        board.material.specularColor = new BABYLON.Color3(0, 0, 0);
+        board.material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+        board.material.backFaceCulling = false;
+
+        boardTexture.drawText("Player 1 Score:", null, 240, "bold 80px verdana", "white");
+        boardTexture.hasAlpha = true;
+
 
         let map = {}; //object for multiple key presses
         scene.actionManager = new BABYLON.ActionManager(scene);
@@ -170,31 +223,75 @@ window.addEventListener('DOMContentLoaded', function () {
             map[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
         }));
 
-
-
+        let player1Points = 0;
+        let player2Points = 0;
         scene.registerAfterRender(function () {
+
             for (let i = 0; i < resources.length; i++) {
                 if(!resources[i].captured){
+
                     if(charater.intersectsMesh(resources[i], false)) {
                         resources[i].captured = true;
+                        player1Points++;
+                        particleSystem.emitter = resources[i];
+                        particleSystem.color1 = new BABYLON.Color4(0, 0, 1, .80);
 
-                        resources[i].material.diffuseColor = new BABYLON.Color3(0, 0, 1);
-                        // console.log(resources[i])
+                        return player1Points;
+                    }
+                    if(charater2.intersectsMesh(resources[i], false)){
+                        resources[i].captured = true;
+                        player2Points++;
+                        particleSystem.emitter = resources[i];
+                        particleSystem.color1 = new BABYLON.Color4(1, 0, 0, .80);
+
+                        return player2Points;
                     }
                 }
             }
+
         });
 
-        const capturedResourceCount = function (){
-            let capturedResources = 0;
-            for(let i=0; i < resources.length; i++){
-                console.log(resources[i]);
-                if(resources[i].captured){
-                    capturedResources++;
-                }
+        scene.registerAfterRender(function () {
+            // let player1score = capturedResourceCount();
+            // const context2D = boardTexture.getContext();
+
+            // const char1score = function() {
+            //     context2D.clearRect(0, 850, 400, 400);
+            //     boardTexture.drawText(player1score, null, 480, "140px verdana", "white", null);
+            // };
+            // char1score();
+        });
+
+        scene.registerAfterRender(function () {
+            let speed = 0.01;
+            let hor = 0;
+            let ver = 0;
+
+            //forward
+            if ((map["i"] || map["I"])) {
+                ver += 1;
             }
-            return capturedResources;
-        };
+
+            //back
+            if ((map["k"] || map["K"])) {
+                ver += -1;
+            }
+
+            //left
+            if ((map["j"] || map["J"])) {
+                hor += -1;
+            }
+
+            //right
+            if ((map["l"] || map["L"])) {
+                hor += 1;
+            }
+
+            if (hor !== 0 || ver !== 0) {
+                moveCharacter(charater2, speed, hor, ver);
+            }
+        });
+
 
         scene.registerAfterRender(function () {
             // sets skybox to camera so u cant zoom past skybox
@@ -203,6 +300,7 @@ window.addEventListener('DOMContentLoaded', function () {
             let speed = 0.01;
             let hor = 0;
             let ver = 0;
+
 
             //forward
             if ((map["w"] || map["W"])) {
@@ -226,8 +324,10 @@ window.addEventListener('DOMContentLoaded', function () {
 
             //jump
             if (map[" "]) {
-                let count = capturedResourceCount();
-                console.log("Captured =", count, "/", resources.length);
+                // let count = capturedResourceCount();
+                // console.log("Captured =", count, "/", resources.length);
+                console.log("Player 1:", player1Points, "Player 2:", player2Points,"/", resources.length);
+
             }
 
             if (map["Shift"]) {
