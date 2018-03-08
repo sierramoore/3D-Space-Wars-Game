@@ -3,10 +3,10 @@ window.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById("renderCanvas");
     const engine = new BABYLON.Engine(canvas, true);
 
-    const scriptGUI = document.createElement("script");
-    scriptGUI.id = "CASTORGUI";
-    scriptGUI.src = "http://www.babylon.actifgames.com/demoCastorGUI/castorGUI.min.js";
-    document.body.appendChild(scriptGUI);
+    // const scriptGUI = document.createElement("script");
+    // scriptGUI.id = "CASTORGUI";
+    // scriptGUI.src = "http://www.babylon.actifgames.com/demoCastorGUI/castorGUI.min.js";
+    // document.body.appendChild(scriptGUI);
 
     /////////// debug visuals --axis lines
     const createAxe = function (x, y, z, size, scene) {
@@ -30,15 +30,90 @@ window.addEventListener('DOMContentLoaded', function () {
 
     const planetRadius = 150;
     const resourceAmount = 12;
+    const playerCount = 2;
+
+    const moveCharacter = function(character, speed, x, z) {
+        character.rotation.y = Math.atan2(x, z);
+        character.parent.rotate(new BABYLON.Vector3(z, 0, -x).normalize(), speed, BABYLON.Space.LOCAL);
+    };
 
     // pass a point and will land it on the planet
     const landPoint = function (p) {
         return BABYLON.Vector3.Normalize(p).scale(planetRadius);
     };
 
-    const moveCharacter = function(character, speed, x, z) {
-        character.rotation.y = Math.atan2(x, z);
-        character.parent.rotate(new BABYLON.Vector3(z, 0, -x).normalize(), speed, BABYLON.Space.LOCAL);
+    function randomSpherePoint(radius){
+        if (radius === undefined) {
+            radius = 1;
+        }
+        let u = Math.random();
+        let v = Math.random();
+        let theta = 2 * Math.PI * u;
+        let phi = Math.acos(2 * v - 1);
+        let x = (radius * Math.sin(phi) * Math.cos(theta));
+        let y = (radius * Math.sin(phi) * Math.sin(theta));
+        let z = (radius * Math.cos(phi));
+        return new BABYLON.Vector3(x, y, z);
+    }
+
+    function randomPlanetPoint() {
+        return randomSpherePoint(planetRadius);
+    }
+
+    const createResources = function(count, scene, assetsManager) {
+        const resources = [];
+        let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/crystal/", "crystal.babylon");
+        meshTask.onSuccess = function (task) {
+            const crystal = task.loadedMeshes[0];
+            crystal.position = landPoint(new BABYLON.Vector3(0, 0, 0));
+            crystal.scaling = new BABYLON.Vector3(5, 5, 5);
+
+            for (let i = 0; i < count; i++) {
+                const n = randomSpherePoint();
+                const resource = crystal.clone("resource_" + i);
+                //createAxis(100,scene).parent = resource;
+                resource.position = n.scale(planetRadius);
+
+                const rx = new BABYLON.Vector3(0, 1, 0);
+                const ry = new BABYLON.Vector3(1, 0, 0);
+                const rz = new BABYLON.Vector3(0, 0, 1);
+                // resource.rotation.x = 1;
+                // resource.rotation.y = 2;
+                //const r = Vector3.RotationFromAxis(rx, ry, rz);
+                //console.log(i, r);
+                //resource.rotation = Vector3.RotationFromAxis(rx, ry, rz);
+                //console.log(i, resource.position, resource.rotation);
+                //resource.rotationQuaternion = Quaternion.RotationQuaternionFromAxis(rx, ry, rz);
+                //resource.rotation.x = -Math.PI / 2;
+                resource.capturedBy = null;
+                resources.push(resource);
+            }
+
+           crystal.dispose();
+        };
+        return resources;
+    };
+
+    const createCharacters = function (colors, scene) {
+        const characters = [];
+
+        for (let i = 0; i < colors.length; i++) {
+            //charaterRoot is the inner basis in the sphere on which the charater moves
+            const charaterRoot = new BABYLON.TransformNode("root");
+            charaterRoot.rotation.x = -Math.PI / 2;
+
+            const charater = new BABYLON.MeshBuilder.CreateSphere('charater', {diameter: 10}, scene);
+            createAxis(20, scene).parent = charater;
+            charater.parent = charaterRoot;
+            charater.position.y = planetRadius;
+            charater.material = new BABYLON.StandardMaterial('charaterMaterial_' + i, scene);
+            charater.material.diffuseColor = colors[i];
+
+            charater.logic = { score:0, color:colors[i] };
+
+            characters.push(charater);
+        }
+        return characters;
     };
 
 
@@ -82,59 +157,10 @@ window.addEventListener('DOMContentLoaded', function () {
         directionalLight1.specular = new BABYLON.Color3(0.2, 0.2, 0.3);
         directionalLight1.intensity = 1.5;
 
+        const characters = createCharacters([new BABYLON.Color3(1,0,1), new BABYLON.Color3(0,0,1)], scene);
 
-        //charaterRoot is the inner basis in the sphere on which the charater moves
-        const charaterRoot = new BABYLON.TransformNode("root");
-        charaterRoot.rotation.x = -Math.PI / 2;
-
-        const charaterRoot2 = new BABYLON.TransformNode("root2");
-        charaterRoot2.rotation.x = -Math.PI / 2;
-
-        const charater = new BABYLON.MeshBuilder.CreateSphere('charater', {diameter: 10}, scene);
-        charater.parent = charaterRoot;
-        charater.position.y = planetRadius;
-        charater.material = new BABYLON.StandardMaterial('charaterMaterial', scene);
-        charater.material.diffuseColor = new BABYLON.Color3(1,0,1);
-        createAxis(20, scene).parent = charater;
-
-        const charater2 = new BABYLON.MeshBuilder.CreateSphere('charater2', {diameter: 10}, scene);
-        charater2.parent = charaterRoot2;
-        charater2.position = randomSpherePoint(new BABYLON.Vector3(0,1,0));
-        charater2.material = new BABYLON.StandardMaterial('charaterMaterial', scene);
-        charater2.material.diffuseColor = new BABYLON.Color3(0,0,1);
-
-        camera.parent = charaterRoot;
+        camera.parent = characters[0].parent;
         camera.setPosition(new BABYLON.Vector3(0,500,-50));
-
-
-
-        // const assetsManager = new BABYLON.AssetsManager(scene);
-        // const meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/crystal/", "crystal.babylon");
-        // meshTask.onSuccess = function (task) {
-        //     task.loadedMeshes[0].position = landPoint(new BABYLON.Vector3(1, 0, 0));
-        //     task.loadedMeshes[0].scaling = new BABYLON.Vector3(5, 5, 5);
-        //     task.loadedMeshes[0].rotation.x = -Math.PI/2;
-        //     task.loadedMeshes[0].clone("sdfsd").position = landPoint(new BABYLON.Vector3(0, 1, 0));
-        // };
-
-        // const imageTask = assetsManager.addImageTask("image task", "textures/crystal/crystal.png");
-        // imageTask.size =30;
-        // imageTask.onSuccess = function(task) {
-        //     console.log(task.image.width);
-        // };
-        // assetsManager.load();
-
-
-        function randomSpherePoint(){
-            let u = Math.random();
-            let v = Math.random();
-            let theta = 2 * Math.PI * u;
-            let phi = Math.acos(2 * v - 1);
-            let x = (planetRadius * Math.sin(phi) * Math.cos(theta));
-            let y = (planetRadius * Math.sin(phi) * Math.sin(theta));
-            let z = (planetRadius * Math.cos(phi));
-            return new BABYLON.Vector3(x, y, z);
-        }
 
         const particleSystem = new BABYLON.ParticleSystem("particles", 2000, scene);
         particleSystem.particleTexture = new BABYLON.Texture("textures/flare.png", scene);
@@ -149,68 +175,9 @@ window.addEventListener('DOMContentLoaded', function () {
         particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
 
 
-
         const assetsManager = new BABYLON.AssetsManager(scene);
-        let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/crystal/", "crystal.babylon");
-        const resources = [];
-        const resourceGenerator = function() {
-            for(let i =0; i < resourceAmount; i++){
-
-                meshTask.onSuccess = function (task) {
-                    const resource = task.loadedMeshes[0];
-                    resource.position = landPoint(new BABYLON.Vector3(1, 0, 0));
-                    resource.scaling = new BABYLON.Vector3(5, 5, 5);
-                    resource.rotation.x = -Math.PI/2;
-                    resource.clone("sdfsd").position = landPoint(new BABYLON.Vector3(1, 1, 1));
-                    resource.captured = false;
-                    resource.material = new BABYLON.StandardMaterial("resourceMaterial", scene);
-                    resource.position = randomSpherePoint();
-                    resources.push(resource);
-                };
-                assetsManager.load();
-
-            }
-        };
-        resourceGenerator();
-
-
-        // const capturedResourceCount = function (){
-        //     let capturedResources = 0;
-        //     for(let i=0; i < resources.length; i++){
-        //         if(resources[i].captured){
-        //             capturedResources++;
-        //         }
-        //     }
-        //     return capturedResources;
-        // };
-
-        const capturedResourceCount = function (){
-            //if charater 1 intersects rescource and its captured 1 point for palyer
-            let capturedResources = 0;
-            for(let i=0; i < resources.length; i++){
-                if(resources[i].captured){
-                    capturedResources++;
-                }
-            }
-            return capturedResources;
-        };
-
-
-        // const board = BABYLON.Mesh.CreatePlane("board", 155, scene, false);
-        // board.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
-        // board.material = new BABYLON.StandardMaterial("boardMaterial", scene);
-        // board.position = new BABYLON.Vector3(-100, 300, 100);
-        // board.scaling.y = 0.4;
-        //
-        // const boardTexture = new BABYLON.DynamicTexture("dynamic texture", 712, scene, true);
-        // board.material.diffuseTexture = boardTexture;
-        // board.material.specularColor = new BABYLON.Color3(0, 0, 0);
-        // board.material.emissiveColor = new BABYLON.Color3(1, 1, 1);
-        // board.material.backFaceCulling = false;
-        //
-        // boardTexture.drawText("Player 1 Score:", null, 240, "bold 80px verdana", "white");
-        // boardTexture.hasAlpha = true;
-
+        const resources = createResources(resourceAmount, scene, assetsManager);
+        assetsManager.load();
 
         let map = {}; //object for multiple key presses
         scene.actionManager = new BABYLON.ActionManager(scene);
@@ -228,48 +195,29 @@ window.addEventListener('DOMContentLoaded', function () {
         }));
 
 
-
         let player1Points = 0;
         let player2Points = 0;
         scene.registerAfterRender(function () {
-
+            //TODO make particle effect last for caught rescource
             for (let i = 0; i < resources.length; i++) {
-                if(!resources[i].captured){
+                for (let j = 0; j < characters.length; j++) {
+                    const character = characters[j];
+                    if (resources[i].contact !== character && character.intersectsMesh(resources[i], false)) {
+                        if (resources[i].capturedBy !== null) {
+                            --resources[i].capturedBy.logic.score;
+                        }
+                        resources[i].capturedBy = character;
+                        ++character.logic.score;
 
-                    if(charater.intersectsMesh(resources[i], false)) {
-                        resources[i].captured = true;
-                        player1Points++;
                         particleSystem.emitter = resources[i];
-                        particleSystem.color1 = new BABYLON.Color4(0, 0, 1, .80);
-
-                        document.getElementById('p1score').innerText = player1Points;
-                        return player1Points;
+                        particleSystem.color1 = character.logic.color;
                     }
-                    if(charater2.intersectsMesh(resources[i], false)){
-                        resources[i].captured = true;
-                        player2Points++;
-                        particleSystem.emitter = resources[i];
-                        particleSystem.color1 = new BABYLON.Color4(1, 0, 0, .80);
-
-                        document.getElementById('p2score').innerText = player2Points;
-                        return player2Points;
-                    }
-                    let leftOver =  resources.length - player1Points + player2Points;
-                    document.getElementById('leftOver').innerText = leftOver;
                 }
             }
 
-        });
+            // document.getElementById('p1score').innerText = player1Points;
+            // document.getElementById('leftOver').innerText = resources.length - player1Points + player2Points;
 
-        scene.registerAfterRender(function () {
-            // let player1score = capturedResourceCount();
-            // const context2D = boardTexture.getContext();
-
-            // const char1score = function() {
-            //     context2D.clearRect(0, 850, 400, 400);
-            //     boardTexture.drawText(player1score, null, 480, "140px verdana", "white", null);
-            // };
-            // char1score();
         });
 
         scene.registerAfterRender(function () {
@@ -298,7 +246,7 @@ window.addEventListener('DOMContentLoaded', function () {
             }
 
             if (hor !== 0 || ver !== 0) {
-                moveCharacter(charater2, speed, hor, ver);
+                moveCharacter(characters[1], speed, hor, ver);
             }
         });
 
@@ -334,17 +282,14 @@ window.addEventListener('DOMContentLoaded', function () {
 
             //jump
             if (map[" "]) {
-                // let count = capturedResourceCount();
-                // console.log("Captured =", count, "/", resources.length);
                 console.log("Player 1:", player1Points, "Player 2:", player2Points,"/", resources.length);
-
             }
 
             if (map["Shift"]) {
-                speed *= 10;
+                speed *= 5;
             }
             if (hor !== 0 || ver !== 0) {
-                moveCharacter(charater, speed, hor, ver);
+                moveCharacter(characters[0], speed, hor, ver);
             }
         });
 
