@@ -3,11 +3,6 @@ window.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById("renderCanvas");
     const engine = new BABYLON.Engine(canvas, true);
 
-    // const scriptGUI = document.createElement("script");
-    // scriptGUI.id = "CASTORGUI";
-    // scriptGUI.src = "http://www.babylon.actifgames.com/demoCastorGUI/castorGUI.min.js";
-    // document.body.appendChild(scriptGUI);
-
     /////////// debug visuals --axis lines
     const createAxe = function (x, y, z, size, scene) {
         const axe = BABYLON.Mesh.CreateLines("axisX", [
@@ -29,7 +24,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
 
     const planetRadius = 150;
-    const resourceAmount = 12;
+    const resourceAmount = 1;
     const playerCount = 2;
 
     const moveCharacter = function(character, speed, x, z) {
@@ -46,7 +41,8 @@ window.addEventListener('DOMContentLoaded', function () {
     };
 
     const canSee = function(character, resource) {
-        return 20000 >= distanceSqr(character, resource);
+        return true;
+        //return 20000 >= distanceSqr(character, resource);
     };
 
     // pass a point and will land it on the planet
@@ -68,6 +64,14 @@ window.addEventListener('DOMContentLoaded', function () {
         return new BABYLON.Vector3(x, y, z);
     }
 
+    function randomSphereOrientation(){
+        let u = Math.random();
+        let v = Math.random();
+        let theta = 2 * Math.PI * u;
+        let phi = Math.acos(2 * v - 1);
+        return new BABYLON.Vector3(phi, theta, 0);
+    }
+
     function randomPlanetPoint() {
         return randomSpherePoint(planetRadius);
     }
@@ -83,7 +87,7 @@ window.addEventListener('DOMContentLoaded', function () {
             particleSystem.stop();
             particleSystem.minSize = 5;
             particleSystem.maxHeight = 2;
-            particleSystem.emitRate = 500;
+            particleSystem.emitRate = 100;
             particleSystem.minEmitPower = 5;
             particleSystem.maxEmitPower = 50;
             particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
@@ -92,15 +96,34 @@ window.addEventListener('DOMContentLoaded', function () {
             crystal.scaling = new BABYLON.Vector3(5, 5, 5);
 
             for (let i = 0; i < count; i++) {
-                const n = randomSpherePoint();
+                const root = new BABYLON.TransformNode("root");
+                root.rotation = randomSphereOrientation();
+
                 const resource = crystal.clone("resource_" + i);
-                createAxis(100,scene).parent = resource;
-                resource.position = n.scale(planetRadius);
+                //createAxis(100,scene).parent = resource;
+                resource.parent = root;
+                resource.position.x = 0;
+                resource.position.z = 0;
+                resource.position.y = planetRadius;
+
+                //resource.position = randomSpherePoint(planetRadius);
+
+                ///////////////
+
+                // const n = randomSpherePoint();
+                // const resource = crystal.clone("resource_" + i);
+                // createAxis(100,scene).parent = resource;
+                // resource.position = n.scale(planetRadius);
+                // const x = BABYLON.Vector3.Cross(n, new BABYLON.Vector3(0, 1, 0));
+                // const a = Math.asin(x.length());
+                // resource.rotation(n, Math.PI, BABYLON.Space.WORLD);
+
+
                 //resource.lookAt(BABYLON.Vector3(1, , 0), 10, 10, 0, BABYLON.Space.WORLD);
 
-                const rx = new BABYLON.Vector3(0, 1, 0);
-                const ry = new BABYLON.Vector3(1, 0, 0);
-                const rz = new BABYLON.Vector3(0, 0, 1);
+                // const rx = new BABYLON.Vector3(0, 1, 0);
+                // const ry = new BABYLON.Vector3(1, 0, 0);
+                // const rz = new BABYLON.Vector3(0, 0, 1);
                 // resource.rotation.x = 1;
                 // resource.rotation.y = 2;
                 //const r = Vector3.RotationFromAxis(rx, ry, rz);
@@ -149,7 +172,7 @@ window.addEventListener('DOMContentLoaded', function () {
                 const characterModel = model.clone("character_" + i, character);
                 characterModel.rotation.y = Math.PI;
 
-                character.logic = {score: 0, color: colors[i]};
+                character.logic = {score: 0, color: colors[i], name: "Player " + 1};
                 characters.push(character);
             }
 
@@ -212,20 +235,12 @@ window.addEventListener('DOMContentLoaded', function () {
 
         let map = {}; //object for multiple key presses
         scene.actionManager = new BABYLON.ActionManager(scene);
-        // scene.fogEnabled = true;
-        // scene.fogColor = new BABYLON.Color3(1., 0., 0.);
-        // scene.fogDensity = 10;
-        // scene.fogDensity = 10;
-
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
             map[evt.sourceEvent.key] = true;
         }));
-
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
             map[evt.sourceEvent.key] = false;
         }));
-
-
 
 
         scene.registerAfterRender(function () {
@@ -249,11 +264,18 @@ window.addEventListener('DOMContentLoaded', function () {
                 }
             }
             let scoreSum = 0;
-            for(let i=0; i < characters.length; i++){
+            for(let i=0; i < characters.length; i++) {
                 scoreSum += characters[i].logic.score;
                 document.getElementById('p' + i + 'score').innerText = characters[i].logic.score;
-            }
 
+                if (scoreSum === resourceAmount) {
+                    if(characters[i].logic.score > scoreSum / 2){
+                        document.getElementById("winner").innerText = "Player " + characters[i].logic.name + " Wins";
+                    }
+                    document.getElementById("gameOver").innerText = "Game Over";
+
+                }
+            }
             document.getElementById('leftOver').innerText = resources.length - scoreSum;
         });
 
