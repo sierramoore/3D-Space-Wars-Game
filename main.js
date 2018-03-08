@@ -195,8 +195,6 @@ window.addEventListener('DOMContentLoaded', function () {
         }));
 
 
-        let player1Points = 0;
-        let player2Points = 0;
         scene.registerAfterRender(function () {
             //TODO make particle effect last for caught rescource
             for (let i = 0; i < resources.length; i++) {
@@ -214,9 +212,14 @@ window.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             }
+            let scoreSum = 0;
+            for(let i=0; i < characters.length; i++){
+                scoreSum += characters[i].logic.score;
+                document.getElementById('p' + i + 'score').innerText = characters[i].logic.score;
+            }
 
-            // document.getElementById('p1score').innerText = player1Points;
-            // document.getElementById('leftOver').innerText = resources.length - player1Points + player2Points;
+            document.getElementById('leftOver').innerText = resources.length - scoreSum;
+
 
         });
 
