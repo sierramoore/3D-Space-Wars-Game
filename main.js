@@ -37,6 +37,18 @@ window.addEventListener('DOMContentLoaded', function () {
         character.parent.rotate(new BABYLON.Vector3(z, 0, -x).normalize(), speed, BABYLON.Space.LOCAL);
     };
 
+    const distanceSqr = function(obj1, obj2) {
+        return obj1.getAbsolutePosition().subtract(obj2.getAbsolutePosition()).lengthSquared();
+    };
+
+    const canCapture = function(character, resource) {
+        return 200 >= distanceSqr(character, resource);
+    };
+
+    const canSee = function(character, resource) {
+        return 20000 >= distanceSqr(character, resource);
+    };
+
     // pass a point and will land it on the planet
     const landPoint = function (p) {
         return BABYLON.Vector3.Normalize(p).scale(planetRadius);
@@ -64,15 +76,27 @@ window.addEventListener('DOMContentLoaded', function () {
         const resources = [];
         let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/crystal/", "crystal.babylon");
         meshTask.onSuccess = function (task) {
+
+            const particleSystem = new BABYLON.ParticleSystem("particles", 2000, scene);
+            particleSystem.particleTexture = new BABYLON.Texture("textures/flare.png", scene);
+            particleSystem.emitter = landPoint(new BABYLON.Vector3(0,0,0));
+            particleSystem.stop();
+            particleSystem.minSize = 5;
+            particleSystem.maxHeight = 2;
+            particleSystem.emitRate = 500;
+            particleSystem.minEmitPower = 5;
+            particleSystem.maxEmitPower = 50;
+            particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+
             const crystal = task.loadedMeshes[0];
-            crystal.position = landPoint(new BABYLON.Vector3(0, 0, 0));
             crystal.scaling = new BABYLON.Vector3(5, 5, 5);
 
             for (let i = 0; i < count; i++) {
                 const n = randomSpherePoint();
                 const resource = crystal.clone("resource_" + i);
-                //createAxis(100,scene).parent = resource;
+                createAxis(100,scene).parent = resource;
                 resource.position = n.scale(planetRadius);
+                //resource.lookAt(BABYLON.Vector3(1, , 0), 10, 10, 0, BABYLON.Space.WORLD);
 
                 const rx = new BABYLON.Vector3(0, 1, 0);
                 const ry = new BABYLON.Vector3(1, 0, 0);
@@ -85,34 +109,53 @@ window.addEventListener('DOMContentLoaded', function () {
                 //console.log(i, resource.position, resource.rotation);
                 //resource.rotationQuaternion = Quaternion.RotationQuaternionFromAxis(rx, ry, rz);
                 //resource.rotation.x = -Math.PI / 2;
+
+                resource.particleSystem = particleSystem.clone("", resource);
+                resource.particleSystem.stop();
+
+                resource.setEnabled(false);
                 resource.capturedBy = null;
                 resources.push(resource);
             }
-
-           crystal.dispose();
+            particleSystem.dispose();
+            crystal.dispose();
         };
         return resources;
     };
 
-    const createCharacters = function (colors, scene) {
+    const createCharacters = function (colors, scene, assetsManager) {
         const characters = [];
 
-        for (let i = 0; i < colors.length; i++) {
-            //charaterRoot is the inner basis in the sphere on which the charater moves
-            const charaterRoot = new BABYLON.TransformNode("root");
-            charaterRoot.rotation.x = -Math.PI / 2;
+        let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/trump/", "trump.babylon");
+        meshTask.onSuccess = function (task) {
+            const model = task.loadedMeshes[0];
+            model.setPivotPoint(new BABYLON.Vector3(-0.24,0,0), BABYLON.Space.LOCAL);
+            model.scaling = new BABYLON.Vector3(15, 15, 15);
 
-            const charater = new BABYLON.MeshBuilder.CreateSphere('charater', {diameter: 10}, scene);
-            createAxis(20, scene).parent = charater;
-            charater.parent = charaterRoot;
-            charater.position.y = planetRadius;
-            charater.material = new BABYLON.StandardMaterial('charaterMaterial_' + i, scene);
-            charater.material.diffuseColor = colors[i];
+            for (let i = 0; i < colors.length; i++) {
+                //charaterRoot is the inner basis in the sphere on which the charater moves
+                const characterRoot = new BABYLON.TransformNode("root");
+                characterRoot.rotation.x = -Math.PI / 2;
 
-            charater.logic = { score:0, color:colors[i] };
+                const character = new BABYLON.MeshBuilder.CreateSphere('charater', {diameter: 10}, scene);
 
-            characters.push(charater);
-        }
+                //const character = new BABYLON.MeshBuilder.CreateBox('charater', {size: 10}, scene);
+                character.parent = characterRoot;
+                character.position.x = 0;
+                character.position.z = 0;
+                character.position.y = planetRadius;
+
+                createAxis(20, scene).parent = character;
+                const characterModel = model.clone("character_" + i, character);
+                characterModel.rotation.y = Math.PI;
+
+                character.logic = {score: 0, color: colors[i]};
+                characters.push(character);
+            }
+
+            model.dispose();
+        };
+
         return characters;
     };
 
@@ -157,25 +200,13 @@ window.addEventListener('DOMContentLoaded', function () {
         directionalLight1.specular = new BABYLON.Color3(0.2, 0.2, 0.3);
         directionalLight1.intensity = 1.5;
 
-        const characters = createCharacters([new BABYLON.Color3(1,0,1), new BABYLON.Color3(0,0,1)], scene);
-
-        camera.parent = characters[0].parent;
-        camera.setPosition(new BABYLON.Vector3(0,500,-50));
-
-        const particleSystem = new BABYLON.ParticleSystem("particles", 2000, scene);
-        particleSystem.particleTexture = new BABYLON.Texture("textures/flare.png", scene);
-        // particleSystem.textureMask = new BABYLON.Color4(0.1, 0.8, 0.8, 1.0);
-        particleSystem.emitter = landPoint(new BABYLON.Vector3(0,0,0));
-        particleSystem.start();
-        particleSystem.minSize = 5;
-        particleSystem.maxHeight = 2;
-        particleSystem.emitRate = 500;
-        particleSystem.minEmitPower = 5;
-        particleSystem.maxEmitPower = 50;
-        particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
-
 
         const assetsManager = new BABYLON.AssetsManager(scene);
+        const characters = createCharacters([new BABYLON.Color3(1,0,1), new BABYLON.Color3(0,0,1)], scene, assetsManager);
+
+        //camera.parent = characters[0].parent;
+        camera.setPosition(new BABYLON.Vector3(0,500,-50));
+
         const resources = createResources(resourceAmount, scene, assetsManager);
         assetsManager.load();
 
@@ -187,28 +218,33 @@ window.addEventListener('DOMContentLoaded', function () {
         // scene.fogDensity = 10;
 
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
-            map[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
+            map[evt.sourceEvent.key] = true;
         }));
 
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
-            map[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
+            map[evt.sourceEvent.key] = false;
         }));
 
 
+
+
         scene.registerAfterRender(function () {
-            //TODO make particle effect last for caught rescource
             for (let i = 0; i < resources.length; i++) {
                 for (let j = 0; j < characters.length; j++) {
                     const character = characters[j];
-                    if (resources[i].contact !== character && character.intersectsMesh(resources[i], false)) {
+                    if (!resources[i].isEnabled() && canSee(character, resources[i])) {
+                        resources[i].setEnabled(true);
+                    }
+
+                    if (resources[i].contact !== character && canCapture(character, resources[i])) {
                         if (resources[i].capturedBy !== null) {
                             --resources[i].capturedBy.logic.score;
                         }
                         resources[i].capturedBy = character;
                         ++character.logic.score;
 
-                        particleSystem.emitter = resources[i];
-                        particleSystem.color1 = character.logic.color;
+                        resources[i].particleSystem.color1 = character.logic.color;
+                        resources[i].particleSystem.start();
                     }
                 }
             }
@@ -219,8 +255,6 @@ window.addEventListener('DOMContentLoaded', function () {
             }
 
             document.getElementById('leftOver').innerText = resources.length - scoreSum;
-
-
         });
 
         scene.registerAfterRender(function () {
