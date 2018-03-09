@@ -146,7 +146,7 @@ window.addEventListener('DOMContentLoaded', function () {
         return resources;
     };
 
-    const createCharacters = function (colors, scene, assetsManager) {
+    const createCharacters = function (colors, scene, assetsManager, camera) {
         const characters = [];
 
         let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/trump/", "trump.babylon");
@@ -164,7 +164,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
                 //const character = new BABYLON.MeshBuilder.CreateBox('charater', {size: 10}, scene);
                 character.parent = characterRoot;
-                character.position.x = 0;
+                character.position.x = i * 40;
                 character.position.z = 0;
                 character.position.y = planetRadius;
 
@@ -172,11 +172,12 @@ window.addEventListener('DOMContentLoaded', function () {
                 const characterModel = model.clone("character_" + i, character);
                 characterModel.rotation.y = Math.PI;
 
-                character.logic = {score: 0, color: colors[i], name: "Player " + 1};
+                character.logic = {score: 0, color: colors[i], name: "Player " + [i + 1]};
                 characters.push(character);
             }
 
             model.dispose();
+            camera.parent = charater[0].parent;
         };
 
         return characters;
@@ -188,9 +189,10 @@ window.addEventListener('DOMContentLoaded', function () {
         // scene.enablePhysics();
 
         const camera = new BABYLON.ArcRotateCamera("Camera", 0, canvas.height/2, 10, BABYLON.Vector3.Zero(), scene);
-        //camera.setPosition(new BABYLON.Vector3(0,500,100));
+        camera.setPosition(new BABYLON.Vector3(0,500,200));
         camera.attachControl(canvas, false);
-        camera.lowerRadiusLimit = 150;
+        // camera.useFramingBehavior = true;
+
 
         const skybox = BABYLON.Mesh.CreateBox("skybox", 10000.0, scene);
         const skyboxMaterial = new BABYLON.StandardMaterial("skybox", scene);
@@ -210,6 +212,9 @@ window.addEventListener('DOMContentLoaded', function () {
         planetMtl.specularTexture = new BABYLON.Texture("textures/planet/moon_SPEC.png", scene);
         planet.material = planetMtl;
 
+        // camera.setTarget(camera.position);
+        camera.lowerRadiusLimit = 250;
+
         const ambientLight = new BABYLON.HemisphericLight('ambient light bob', new BABYLON.Vector3(0,0,0), scene);
         ambientLight.excludedMeshes.push(skybox); //push light into the excludeMeshes arr to be excluded so it doesnt over light scene
         ambientLight.setDirectionToTarget(new BABYLON.Vector3(0,0,0));
@@ -225,10 +230,11 @@ window.addEventListener('DOMContentLoaded', function () {
 
 
         const assetsManager = new BABYLON.AssetsManager(scene);
-        const characters = createCharacters([new BABYLON.Color3(1,0,1), new BABYLON.Color3(0,0,1)], scene, assetsManager);
+        const characters = createCharacters([new BABYLON.Color3(1,0,1), new BABYLON.Color3(0,0,1)], scene, assetsManager, camera);
 
-        //camera.parent = characters[0].parent;
-        camera.setPosition(new BABYLON.Vector3(0,500,-50));
+
+        // camera.parent = characters[0].parent;
+        // camera.setPosition(new BABYLON.Vector3(0,500,5));
 
         const resources = createResources(resourceAmount, scene, assetsManager);
         assetsManager.load();
@@ -242,8 +248,20 @@ window.addEventListener('DOMContentLoaded', function () {
             map[evt.sourceEvent.key] = false;
         }));
 
+        BABYLON.Effect.ShadersStore.gradientVertexShader = "precision mediump float;attribute vec3 position;attribute vec3 normal;attribute vec2 uv;uniform mat4 worldViewProjection;varying vec4 vPosition;varying vec3 vNormal;void main(){vec4 p = vec4(position,1.);vPosition = p;vNormal = normal;gl_Position = worldViewProjection * p;}";
 
+        // scene.fogMode = BABYLON.Scene.FOGMODE_LINEAR;
+        // scene.fogDensity = 0.005;
+        // scene.fogStart = 10;
+        // scene.fogEnd = 20;
+        // scene.fogColor = new BABYLON.Color4(0.9, 0.9, 0.7, .5);
+
+
+        let alpha = 0;
         scene.registerAfterRender(function () {
+            // scene.fogDensity = Math.cos(alpha) / 10;
+            alpha -= 0.8;
+
             for (let i = 0; i < resources.length; i++) {
                 for (let j = 0; j < characters.length; j++) {
                     const character = characters[j];
@@ -351,7 +369,6 @@ window.addEventListener('DOMContentLoaded', function () {
                 moveCharacter(characters[0], speed, hor, ver);
             }
         });
-
 
         return scene;
     };

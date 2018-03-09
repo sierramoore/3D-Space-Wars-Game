@@ -7,27 +7,33 @@
     <script src="main.js"  type="text/javascript"></script>
     <link href="https://fonts.googleapis.com/css?family=Orbitron" rel="stylesheet">
     <style>
-
+        .container{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
 
     <canvas id="renderCanvas" tabindex="0" ></canvas>
+    <div class="container">
         <div style="left: 450px; position: absolute; top: 10px;">
-            <p style="position: absolute; left: -403px; top: -13px; font-size: 26px; font-family: 'Orbitron', sans-serif; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Player 1 Score:</p>
-            <p id="p0score" style="position: absolute; left: -160px; top: -13px; font-size: 26px; font-family: 'Orbitron',sans-serif; color: #ccd56a;">0</p>
+            <p style="position: absolute; left: -403px; top: -13px; font-size: 20px; font-family: 'Orbitron', sans-serif; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Player 1 Score:</p>
+            <p id="p0score" style="position: absolute; left: -220px; top: -13px; font-size: 21px; font-family: 'Orbitron',sans-serif; color: #ccd56a;">0</p>
         </div>
         <div style="left: 450px; position: absolute; top: 50px;">
-            <p style="position: absolute; left: -403px; top: -13px; font-size: 26px; font-family: 'Orbitron', sans-serif; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Player 2 Score:</p>
-            <p id="p1score" style="position: absolute; left: -160px; top: -13px; font-size: 26px; font-family: 'Orbitron',sans-serif; color: #ccd56a;">0</p>
+            <p style="position: absolute; left: -403px; top: -13px; font-size: 20px; font-family: 'Orbitron', sans-serif; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Player 2 Score:</p>
+            <p id="p1score" style="position: absolute; left: -220px; top: -13px; font-size: 21px; font-family: 'Orbitron',sans-serif; color: #ccd56a;">0</p>
         </div>
 
         <div style="left: 450px; position: absolute; top: 50px;">
-            <p style="position: absolute; left: -403px; top: 23px; font-size: 26px; font-family: 'Orbitron', sans-serif; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Remaining:</p>
-            <p id="leftOver" style="position: absolute; left: -240px; top: 23px; font-size: 26px; font-family: 'Orbitron',sans-serif; color: #ccd56a;">0</p>
-            <h1 id="gameOver" style="position: absolute; text-align: center; font-size: 36px; font-family: 'Orbitron', sans-serif; color: #ccd56a; width: 403px;"></h1>
-            <h1 id="winner" style="position: absolute; text-align: center; font-size: 36px; font-family: 'Orbitron', sans-serif; color: #ccd56a; width: 403px; top: 43px;"></h1>
+            <p style="position: absolute; left: -403px; top: 23px; font-size: 20px; font-family: 'Orbitron', sans-serif; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Remaining:</p>
+            <p id="leftOver" style="position: absolute; left: -270px; top: 23px; font-size: 21px; font-family: 'Orbitron',sans-serif; color: #ccd56a;">0</p>
+            <h1 id="gameOver" style="position: absolute; text-align: center; font-size: 36px; font-family: 'Orbitron', sans-serif; color: #ccd56a; width: 403px; top: 205px; left: 45%;"></h1>
+            <h1 id="winner" style="position: absolute; text-align: center; font-size: 36px; font-family: 'Orbitron', sans-serif; color: #ccd56a; width: 403px; top: 305px; left: 45%;"></h1>
         </div>
+    </div>
 
 
 
