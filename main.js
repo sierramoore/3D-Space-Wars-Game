@@ -28,7 +28,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
 
     const planetRadius = 150;
-    const resourceAmount = 1;
+    const resourceAmount = 12;
     const playerCount = 2;
 
 
@@ -175,7 +175,7 @@ window.addEventListener('DOMContentLoaded', function () {
                 character.parent.rotation.y = 0;
                 character.parent.rotation.z = 0;
 
-                character.position.x = i * 40;
+                character.position.x = i * 35;
                 character.position.z = 0;
                 character.position.y = planetRadius;
 
@@ -200,7 +200,8 @@ window.addEventListener('DOMContentLoaded', function () {
 
             document.getElementById("winner").innerText = "";
             document.getElementById("gameOver").innerText = "";
-            game.started = true;
+            document.getElementById("playAgain").innerText = "";
+                game.started = true;
         }
     };
 
@@ -221,7 +222,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
             document.getElementById("gameOver").innerText = "Game Over";
             document.getElementById("winner").innerText = "Player " + winner.logic.name + " Wins";
-            document.getElementById("playAgain").innerText = "Press Space Bar To Play Again"
+            document.getElementById("playAgain").innerText = "Press Space Bar To Play Again";
         }
     };
 
