@@ -28,7 +28,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
 
     const planetRadius = 150;
-    const resourceAmount = 9;
+    const resourceAmount = 1;
     const playerCount = 2;
 
 
@@ -221,6 +221,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
             document.getElementById("gameOver").innerText = "Game Over";
             document.getElementById("winner").innerText = "Player " + winner.logic.name + " Wins";
+            document.getElementById("playAgain").innerText = "Press Space Bar To Play Again"
         }
     };
 

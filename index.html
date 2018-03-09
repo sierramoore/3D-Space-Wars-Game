@@ -8,10 +8,23 @@
     <script src="main.js"  type="text/javascript"></script>
     <link href="https://fonts.googleapis.com/css?family=Orbitron" rel="stylesheet">
     <style>
-        .container{
+        /*.container{*/
+            /*display: flex;*/
+            /*justify-content: space-between;*/
+            /*align-items: center;*/
+        /*}*/
+        .container {
+            position: absolute;
+            height: 120px;
+            width: 100%;
+            top: 0;
+            /*background-color: rgba(0, 0, 0, 0.2);*/
+            color: white;
+            transition: 1s;
+            align-items: flex-start;
+            justify-content: space-around;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
         }
     </style>
 </head>
@@ -33,47 +46,9 @@
             <p id="leftOver" style="position: absolute; left: -270px; top: 23px; font-size: 21px; font-family: 'Orbitron',sans-serif; color: #ccd56a;">0</p>
             <h1 id="gameOver" style="position: absolute; text-align: center; font-size: 36px; font-family: 'Orbitron', sans-serif; color: #ccd56a; width: 403px; bottom: -25px; left: 45%;"></h1>
             <h1 id="winner" style="position: absolute; text-align: center; font-size: 36px; font-family: 'Orbitron', sans-serif; color: #ccd56a; width: 503px; top: 305px; left: 45%;"></h1>
-            <!--<button id="restart" style="position: absolute; text-align: center; font-size: 36px; font-family: 'Orbitron', sans-serif; color: #ccd56a; width: 403px; top: 800px; background: transparent; border-color: transparent; left: 25%;"></button>-->
+            <h2 id="playAgain" style="position: absolute; text-align: center; font-size: 36px; font-family: 'Orbitron', sans-serif; color: #ccd56a; width: 800px; top: 700px; background: transparent; border-color: transparent; left: 25%;"></h2>
         </div>
     </div>
-
-
-
-    <script>
-
-        // if (BABYLON.Engine.isSupported()) {
-        //     const canvas = document.getElementById("renderCanvas");
-        //     const engine = new BABYLON.Engine(canvas, true);
-        //     const scene = new BABYLON.Scene(engine);
-        //
-        //     const camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, BABYLON.Vector3.Zero(), scene);
-        //     const sun = new BABYLON.PointLight("Omni0", new BABYLON.Vector3(60, 100, 10), scene);
-        //
-        //     camera.setPosition(new BABYLON.Vector3(-40, 40, 0));
-        //
-        //     const beforeRenderFunction = function () {
-        //         // Camera
-        //         if (camera.beta < 0.1)
-        //             camera.beta = 0.1;
-        //         else if (camera.beta > (Math.PI / 2) * 0.9)
-        //             camera.beta = (Math.PI / 2) * 0.9;
-        //
-        //         if (camera.radius > 50)
-        //             camera.radius = 50;
-        //
-        //         if (camera.radius < 5)
-        //             camera.radius = 5;
-        //     };
-        //
-        //     camera.attachControl(canvas);
-        //
-        //     scene.registerBeforeRender(beforeRenderFunction);
-        //
-        //     engine.runRenderLoop(function () {
-        //         scene.render();
-        //     });
-        // }
-    </script>
 
 </body>
 </html>
