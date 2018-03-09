@@ -3,6 +3,10 @@ window.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById("renderCanvas");
     const engine = new BABYLON.Engine(canvas, true);
 
+    window.addEventListener("resize", function () { // for smooth resizing
+        engine.resize();
+    });
+
     /////////// debug visuals --axis lines
     const createAxe = function (x, y, z, size, scene) {
         const axe = BABYLON.Mesh.CreateLines("axisX", [
@@ -24,8 +28,9 @@ window.addEventListener('DOMContentLoaded', function () {
 
 
     const planetRadius = 150;
-    const resourceAmount = 1;
+    const resourceAmount = 9;
     const playerCount = 2;
+
 
     const moveCharacter = function(character, speed, x, z) {
         character.rotation.y = Math.atan2(x, z);
@@ -37,7 +42,7 @@ window.addEventListener('DOMContentLoaded', function () {
     };
 
     const canCapture = function(character, resource) {
-        return 200 >= distanceSqr(character, resource);
+        return 300 >= distanceSqr(character, resource);
     };
 
     const canSee = function(character, resource) {
@@ -76,13 +81,13 @@ window.addEventListener('DOMContentLoaded', function () {
         return randomSpherePoint(planetRadius);
     }
 
-    const createResources = function(count, scene, assetsManager) {
-        const resources = [];
+    const loadResources = function(count, assetsManager, game) {
         let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/crystal/", "crystal.babylon");
         meshTask.onSuccess = function (task) {
+            const resources = [];
 
-            const particleSystem = new BABYLON.ParticleSystem("particles", 2000, scene);
-            particleSystem.particleTexture = new BABYLON.Texture("textures/flare.png", scene);
+            const particleSystem = new BABYLON.ParticleSystem("particles", 2000, game.scene);
+            particleSystem.particleTexture = new BABYLON.Texture("textures/flare.png", game.scene);
             particleSystem.emitter = landPoint(new BABYLON.Vector3(0,0,0));
             particleSystem.stop();
             particleSystem.minSize = 5;
@@ -97,41 +102,10 @@ window.addEventListener('DOMContentLoaded', function () {
 
             for (let i = 0; i < count; i++) {
                 const root = new BABYLON.TransformNode("root");
-                root.rotation = randomSphereOrientation();
 
                 const resource = crystal.clone("resource_" + i);
-                //createAxis(100,scene).parent = resource;
+                //createAxis(100, game.scene).parent = resource;
                 resource.parent = root;
-                resource.position.x = 0;
-                resource.position.z = 0;
-                resource.position.y = planetRadius;
-
-                //resource.position = randomSpherePoint(planetRadius);
-
-                ///////////////
-
-                // const n = randomSpherePoint();
-                // const resource = crystal.clone("resource_" + i);
-                // createAxis(100,scene).parent = resource;
-                // resource.position = n.scale(planetRadius);
-                // const x = BABYLON.Vector3.Cross(n, new BABYLON.Vector3(0, 1, 0));
-                // const a = Math.asin(x.length());
-                // resource.rotation(n, Math.PI, BABYLON.Space.WORLD);
-
-
-                //resource.lookAt(BABYLON.Vector3(1, , 0), 10, 10, 0, BABYLON.Space.WORLD);
-
-                // const rx = new BABYLON.Vector3(0, 1, 0);
-                // const ry = new BABYLON.Vector3(1, 0, 0);
-                // const rz = new BABYLON.Vector3(0, 0, 1);
-                // resource.rotation.x = 1;
-                // resource.rotation.y = 2;
-                //const r = Vector3.RotationFromAxis(rx, ry, rz);
-                //console.log(i, r);
-                //resource.rotation = Vector3.RotationFromAxis(rx, ry, rz);
-                //console.log(i, resource.position, resource.rotation);
-                //resource.rotationQuaternion = Quaternion.RotationQuaternionFromAxis(rx, ry, rz);
-                //resource.rotation.x = -Math.PI / 2;
 
                 resource.particleSystem = particleSystem.clone("", resource);
                 resource.particleSystem.stop();
@@ -142,33 +116,30 @@ window.addEventListener('DOMContentLoaded', function () {
             }
             particleSystem.dispose();
             crystal.dispose();
+
+            game.resources = resources;
+            startGameIfAllAssetsLoaded(game);
         };
-        return resources;
     };
 
-    const createCharacters = function (colors, scene, assetsManager, camera) {
-        const characters = [];
-
+    const loadCharacters = function (colors, assetsManager, game) {
         let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/trump/", "trump.babylon");
         meshTask.onSuccess = function (task) {
             const model = task.loadedMeshes[0];
             model.setPivotPoint(new BABYLON.Vector3(-0.24,0,0), BABYLON.Space.LOCAL);
             model.scaling = new BABYLON.Vector3(15, 15, 15);
 
+            const characters = [];
+
             for (let i = 0; i < colors.length; i++) {
                 //charaterRoot is the inner basis in the sphere on which the charater moves
                 const characterRoot = new BABYLON.TransformNode("root");
                 characterRoot.rotation.x = -Math.PI / 2;
 
-                const character = new BABYLON.MeshBuilder.CreateSphere('charater', {diameter: 10}, scene);
-
-                //const character = new BABYLON.MeshBuilder.CreateBox('charater', {size: 10}, scene);
+                const character = new BABYLON.MeshBuilder.CreateSphere('charater', {diameter: .1}, game.scene);
                 character.parent = characterRoot;
-                character.position.x = i * 40;
-                character.position.z = 0;
-                character.position.y = planetRadius;
 
-                createAxis(20, scene).parent = character;
+                // createAxis(20, game.scene).parent = character;
                 const characterModel = model.clone("character_" + i, character);
                 characterModel.rotation.y = Math.PI;
 
@@ -177,95 +148,133 @@ window.addEventListener('DOMContentLoaded', function () {
             }
 
             model.dispose();
-            camera.parent = charater[0].parent;
-        };
 
-        return characters;
+            game.characters = characters;
+            startGameIfAllAssetsLoaded(game);
+        };
     };
 
+    const isAllGameAssetsLoaded = function(game) {
+        return game.characters !== null && game.resources !== null;
+    };
 
-    const createScene = function () {
-        const scene = new BABYLON.Scene(engine);
-        // scene.enablePhysics();
+    const startGameIfAllAssetsLoaded = function(game) {
+        if (isAllGameAssetsLoaded(game)) {
+            startGame(game);
+        }
+    };
 
-        const camera = new BABYLON.ArcRotateCamera("Camera", 0, canvas.height/2, 10, BABYLON.Vector3.Zero(), scene);
-        camera.setPosition(new BABYLON.Vector3(0,500,200));
-        camera.attachControl(canvas, false);
-        // camera.useFramingBehavior = true;
+    const startGame = function(game) {
+        if (!game.started) {
+            const characters = game.characters;
+            const resources = game.resources;
 
+            for(let i=0; i < characters.length; i++) {
+                const character = characters[i];
+                character.parent.rotation.x = -Math.PI / 2;
+                character.parent.rotation.y = 0;
+                character.parent.rotation.z = 0;
 
-        const skybox = BABYLON.Mesh.CreateBox("skybox", 10000.0, scene);
-        const skyboxMaterial = new BABYLON.StandardMaterial("skybox", scene);
-        skyboxMaterial.backFaceCulling = false;
-        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox/sky", scene, ["_px.png", "_py.png", "_pz.png", "_nx.png","_ny.png", "_nz.png"]);
-        skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-        skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-        skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-        skybox.material = skyboxMaterial;
+                character.position.x = i * 40;
+                character.position.z = 0;
+                character.position.y = planetRadius;
 
-        const planet = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: planetRadius * 2}, scene);
-        createAxis(200, scene).parent = planet;
-        planet.rotation.y = -2;
-        const planetMtl = new BABYLON.StandardMaterial("planet", scene);
-        planetMtl.diffuseTexture = new BABYLON.Texture("textures/planet/moon.jpg", scene);
-        planetMtl.bumpTexture = new BABYLON.Texture("textures/planet/moon_NRM.png", scene);
-        planetMtl.specularTexture = new BABYLON.Texture("textures/planet/moon_SPEC.png", scene);
-        planet.material = planetMtl;
+                character.logic.score = 0;
+            }
 
-        // camera.setTarget(camera.position);
-        camera.lowerRadiusLimit = 250;
+            for(let i=0; i < resources.length; i++) {
+                const resource = resources[i];
+                resource.setEnabled(false);
+                resource.particleSystem.stop();
 
-        const ambientLight = new BABYLON.HemisphericLight('ambient light bob', new BABYLON.Vector3(0,0,0), scene);
-        ambientLight.excludedMeshes.push(skybox); //push light into the excludeMeshes arr to be excluded so it doesnt over light scene
-        ambientLight.setDirectionToTarget(new BABYLON.Vector3(0,0,0));
-        ambientLight.diffuse = new BABYLON.Color3(0.2, 0.2, 0.3);
-        ambientLight.specular = new BABYLON.Color3(0, 0, 0);
-        ambientLight.intensity = 6;
+                resource.parent.rotation = randomSphereOrientation();
 
-        const directionalLight1 = new BABYLON.DirectionalLight("light", new BABYLON.Vector3(600, 0, 600), scene);
-        directionalLight1.excludedMeshes.push(skybox);
-        directionalLight1.diffuse = new BABYLON.Color3(1, 1, 1);
-        directionalLight1.specular = new BABYLON.Color3(0.2, 0.2, 0.3);
-        directionalLight1.intensity = 1.5;
+                resource.position.x = 0;
+                resource.position.z = 0;
+                resource.position.y = planetRadius;
 
+                resource.capturedBy = null;
+            }
 
-        const assetsManager = new BABYLON.AssetsManager(scene);
-        const characters = createCharacters([new BABYLON.Color3(1,0,1), new BABYLON.Color3(0,0,1)], scene, assetsManager, camera);
+            game.camera.setPosition(new BABYLON.Vector3(0,500,-50));
 
+            document.getElementById("winner").innerText = "";
+            document.getElementById("gameOver").innerText = "";
+            game.started = true;
+        }
+    };
 
-        // camera.parent = characters[0].parent;
-        // camera.setPosition(new BABYLON.Vector3(0,500,5));
+    const stopGame = function (game) {
+        if (game.started) {
+            game.started = false;
 
-        const resources = createResources(resourceAmount, scene, assetsManager);
-        assetsManager.load();
+            let winner = null;
 
-        let map = {}; //object for multiple key presses
-        scene.actionManager = new BABYLON.ActionManager(scene);
-        scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
-            map[evt.sourceEvent.key] = true;
-        }));
-        scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
-            map[evt.sourceEvent.key] = false;
-        }));
+            for(let i=0; i < game.characters.length; i++) {
+                if (winner === null) {
+                    winner = game.characters[i];
+                } else if (winner.logic.score < game.characters[i].logic.score) {
+                    winner = game.characters[i];
+                }
+                // TODO tie
+            }
 
-        BABYLON.Effect.ShadersStore.gradientVertexShader = "precision mediump float;attribute vec3 position;attribute vec3 normal;attribute vec2 uv;uniform mat4 worldViewProjection;varying vec4 vPosition;varying vec3 vNormal;void main(){vec4 p = vec4(position,1.);vPosition = p;vNormal = normal;gl_Position = worldViewProjection * p;}";
+            document.getElementById("gameOver").innerText = "Game Over";
+            document.getElementById("winner").innerText = "Player " + winner.logic.name + " Wins";
+        }
+    };
 
-        // scene.fogMode = BABYLON.Scene.FOGMODE_LINEAR;
-        // scene.fogDensity = 0.005;
-        // scene.fogStart = 10;
-        // scene.fogEnd = 20;
-        // scene.fogColor = new BABYLON.Color4(0.9, 0.9, 0.7, .5);
+    const handleCharacterInput = function (character, left, right, up, down, accel) {
+        let speed = 0.01;
+        let hor = 0;
+        let ver = 0;
 
+        if (up) {
+            ver += 1;
+        }
+        if (down) {
+            ver += -1;
+        }
+        if (left) {
+            hor += -1;
+        }
+        if (right) {
+            hor += 1;
+        }
+        if (accel) {
+            speed *= 5;
+        }
 
-        let alpha = 0;
-        scene.registerAfterRender(function () {
-            // scene.fogDensity = Math.cos(alpha) / 10;
-            alpha -= 0.8;
+        if (hor !== 0 || ver !== 0) {
+            moveCharacter(character, speed, hor, ver);
+        }
+    };
+
+    const handleGameInput = function (game, map) {
+        if (!game.started) {
+            if (map[" "]) {
+                startGameIfAllAssetsLoaded(game);
+            }
+        } else {
+            handleCharacterInput(game.characters[0],
+                map["a"]||map["A"], map["d"]||map["D"], map["w"]||map["W"], map["s"]||map["S"], map["Shift"]);
+            handleCharacterInput(game.characters[1],
+                map["j"]||map["J"], map["l"]||map["L"], map["i"]||map["I"], map["k"]||map["K"], map["Shift"]);
+        }
+    };
+
+    const runGame = function (game) {
+        // sets skybox to camera so u cant zoom past skybox
+        game.skybox.position = game.camera.position;
+
+        if (game.started) {
+            const characters = game.characters;
+            const resources = game.resources;
 
             for (let i = 0; i < resources.length; i++) {
                 for (let j = 0; j < characters.length; j++) {
                     const character = characters[j];
-                    if (!resources[i].isEnabled() && canSee(character, resources[i])) {
+                    if (!resources[i].isEnabled(false) && canSee(character, resources[i])) {
                         resources[i].setEnabled(true);
                     }
 
@@ -281,106 +290,94 @@ window.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             }
+
             let scoreSum = 0;
+
             for(let i=0; i < characters.length; i++) {
                 scoreSum += characters[i].logic.score;
                 document.getElementById('p' + i + 'score').innerText = characters[i].logic.score;
-
-                if (scoreSum === resourceAmount) {
-                    if(characters[i].logic.score > scoreSum / 2){
-                        document.getElementById("winner").innerText = "Player " + characters[i].logic.name + " Wins";
-                    }
-                    document.getElementById("gameOver").innerText = "Game Over";
-
-                }
             }
+
+            if (scoreSum === resourceAmount) {
+               stopGame(game);
+            }
+            
             document.getElementById('leftOver').innerText = resources.length - scoreSum;
-        });
-
-        scene.registerAfterRender(function () {
-            let speed = 0.01;
-            let hor = 0;
-            let ver = 0;
-
-            //forward
-            if ((map["i"] || map["I"])) {
-                ver += 1;
-            }
-
-            //back
-            if ((map["k"] || map["K"])) {
-                ver += -1;
-            }
-
-            //left
-            if ((map["j"] || map["J"])) {
-                hor += -1;
-            }
-
-            //right
-            if ((map["l"] || map["L"])) {
-                hor += 1;
-            }
-
-            if (hor !== 0 || ver !== 0) {
-                moveCharacter(characters[1], speed, hor, ver);
-            }
-        });
-
-
-        scene.registerAfterRender(function () {
-            // sets skybox to camera so u cant zoom past skybox
-            skybox.position = camera.position;
-            // -----MOVE-----(can use two keys at once to move diagonally)
-            let speed = 0.01;
-            let hor = 0;
-            let ver = 0;
-
-
-            //forward
-            if ((map["w"] || map["W"])) {
-                ver += 1;
-            }
-
-            //back
-            if ((map["s"] || map["S"])) {
-                ver += -1;
-            }
-
-            //left
-            if ((map["a"] || map["A"])) {
-                hor += -1;
-            }
-
-            //right
-            if ((map["d"] || map["D"])) {
-                hor += 1;
-            }
-
-            //jump
-            if (map[" "]) {
-                console.log("Player 1:", player1Points, "Player 2:", player2Points,"/", resources.length);
-            }
-
-            if (map["Shift"]) {
-                speed *= 5;
-            }
-            if (hor !== 0 || ver !== 0) {
-                moveCharacter(characters[0], speed, hor, ver);
-            }
-        });
-
-        return scene;
+        }
     };
-    const scene = createScene();
 
-    window.focus();
+    const createGame = function() {
+        const scene = new BABYLON.Scene(engine);
+        // scene.enablePhysics();
+
+        const camera = new BABYLON.ArcRotateCamera("Camera", 0, canvas.height/2, 10, BABYLON.Vector3.Zero(), scene);
+        camera.attachControl(canvas, false);
+        camera.lowerRadiusLimit = 150;
+        camera.useFramingBehavior = true;
+
+        const skybox = BABYLON.Mesh.CreateBox("skybox", 10000.0, scene);
+        const skyboxMaterial = new BABYLON.StandardMaterial("skybox", scene);
+        skyboxMaterial.backFaceCulling = false;
+        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox/sky", scene, ["_px.png", "_py.png", "_pz.png", "_nx.png","_ny.png", "_nz.png"]);
+        skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        skybox.material = skyboxMaterial;
+
+        const planet = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: planetRadius * 2}, scene);
+        // createAxis(200, scene).parent = planet;
+        planet.rotation.y = -2;
+        const planetMtl = new BABYLON.StandardMaterial("planet", scene);
+        planetMtl.diffuseTexture = new BABYLON.Texture("textures/planet/moon.jpg", scene);
+        planetMtl.bumpTexture = new BABYLON.Texture("textures/planet/moon_NRM.png", scene);
+        planetMtl.specularTexture = new BABYLON.Texture("textures/planet/moon_SPEC.png", scene);
+        planet.material = planetMtl;
+
+        camera.setTarget(skybox);
+        camera.setTarget(planet);
+        camera.lowerRadiusLimit = 350;
+        camera.upperRadiusLimit = 5000;
+
+        const ambientLight = new BABYLON.HemisphericLight('ambient light bob', new BABYLON.Vector3(0,0,0), scene);
+        ambientLight.excludedMeshes.push(skybox); //push light into the excludeMeshes arr to be excluded so it doesnt over light scene
+        ambientLight.setDirectionToTarget(new BABYLON.Vector3(0,0,0));
+        ambientLight.diffuse = new BABYLON.Color3(0.2, 0.2, 0.3);
+        ambientLight.specular = new BABYLON.Color3(0, 0, 0);
+        ambientLight.intensity = 6;
+
+        const directionalLight1 = new BABYLON.DirectionalLight("light", new BABYLON.Vector3(600, 0, 600), scene);
+        directionalLight1.excludedMeshes.push(skybox);
+        directionalLight1.diffuse = new BABYLON.Color3(1, 1, 1);
+        directionalLight1.specular = new BABYLON.Color3(0.2, 0.2, 0.3);
+        directionalLight1.intensity = 1.5;
+
+
+        const game = { started: false, scene: scene, camera: camera, skybox: skybox, characters: null, resources: null };
+
+        const assetsManager = new BABYLON.AssetsManager(scene);
+        loadCharacters([new BABYLON.Color3(1,0,1), new BABYLON.Color3(0,0,1)], assetsManager, game);
+        loadResources(resourceAmount, assetsManager, game);
+        assetsManager.load();
+
+        let keymap = {}; //object for multiple key presses
+        game.scene.actionManager = new BABYLON.ActionManager(game.scene);
+        game.scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
+            keymap[evt.sourceEvent.key] = true;
+        }));
+        game.scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
+            keymap[evt.sourceEvent.key] = false;
+        }));
+
+        game.scene.registerAfterRender(() => { handleGameInput(game, keymap) });
+        game.scene.registerAfterRender(() => { runGame(game) });
+
+        return game;
+    };
+
+    const game = createGame();
+
     engine.runRenderLoop(() => {
-        scene.render();
-    });
-
-    window.addEventListener("resize", function () { // for smooth resizing
-        engine.resize();
+        game.scene.render();
     });
 });
 
