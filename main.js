@@ -200,7 +200,8 @@ window.addEventListener('DOMContentLoaded', function () {
                 resource.capturedBy = null;
             }
 
-            game.camera.setPosition(new BABYLON.Vector3(0,500,-50));
+            game.camera.setTarget(game.planet);
+            //game.camera.setPosition(new BABYLON.Vector3(0,500,-50));
 
             document.getElementById("winner").innerText = "";
             document.getElementById("gameOver").innerText = "";
@@ -315,8 +316,8 @@ window.addEventListener('DOMContentLoaded', function () {
     const createGame = function() {
         const scene = new BABYLON.Scene(engine);
 
-        const startCamera = new BABYLON.ArcRotateCamera("startCamera",  0, canvas.height * 2, 10, BABYLON.Vector3.Zero(), scene);
-        startCamera.attachControl(canvas, false);
+        // const startCamera = new BABYLON.ArcRotateCamera("startCamera",  0, canvas.height * 2, 10, BABYLON.Vector3.Zero(), scene);
+        // startCamera.attachControl(canvas, false);
 
 
         const camera = new BABYLON.ArcRotateCamera("Camera", 0, canvas.height/2, 10, BABYLON.Vector3.Zero(), scene);
@@ -343,7 +344,6 @@ window.addEventListener('DOMContentLoaded', function () {
         planet.material = planetMtl;
 
         camera.setTarget(skybox);
-        camera.setTarget(planet);
         camera.lowerRadiusLimit = 350;
         camera.upperRadiusLimit = 5000;
 
@@ -363,7 +363,7 @@ window.addEventListener('DOMContentLoaded', function () {
         directionalLight1.intensity = 1.5;
 
 
-        const game = { state: gameStateMenu, loaded: false, scene: scene, camera: camera, skybox: skybox, characters: null, resources: null };
+        const game = { state: gameStateMenu, loaded: false, scene: scene, camera: camera, skybox: skybox, planet: planet, characters: null, resources: null };
 
         const assetsManager = new BABYLON.AssetsManager(scene);
         loadCharacters([new BABYLON.Color3(1,0,1), new BABYLON.Color3(0,0,1)], assetsManager, game);
