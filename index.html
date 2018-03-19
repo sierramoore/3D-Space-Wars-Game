@@ -68,7 +68,7 @@
         /*}*/
         #playAgain{
             text-align: left;
-            font-size: 36px;
+            font-size: 25px;
             display: flex;
             right: -400px;
             top: 700px;
@@ -83,7 +83,8 @@
 
     <canvas id="renderCanvas" tabindex="0" ></canvas>
     <div id="startGame" style="left: 5%; position: relative; bottom: 80%;">
-        <h1 style="">Space Wars</h1>
+        <!--<h1 style="">Space Wars</h1>-->
+        <h1>Space Wars</h1>
         <h2>Instructions</h2>
         <h3>First player to capture the most resources of all WINS!<br>
             <small>- Beware a player can also steal your resources -</small></h3>
@@ -91,7 +92,7 @@
         <p>Player 2: use i,j,k,l keys to move <br> I = up <br> J = left <br>  K = down <br> L = right</p>
 
 
-        <marquee behavior="scroll" direction="left">start the game -- love trump</marquee>
+
         <button onclick="instructionToggle()">Start Game</button>
     </div>
 
@@ -109,11 +110,16 @@
 
             <p style="position: absolute; left: -403px; top: 23px; font-size: 20px; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Remaining:</p>
             <p id="leftOver" style="position: absolute; left: -260px; top: 23px; font-size: 21px; color: #ccd56a;">0</p>
-            <h1 id="gameOver" style="position: absolute; text-align: center; font-size: 36px; color: #ccd56a; width: 403px; bottom: -25px; left: 45%;"></h1>
-            <!--<h1 id="winner" style="position: absolute; font-size: 36px; color: #ccd56a; width: 503px;"></h1>-->
-            <marquee id="winner" behavior="scroll" direction="left"></marquee>
+
+
             <h2 id="playAgain" style="position: absolute; color: #ccd56a; width: 800px;  background: transparent; border-color: transparent;"></h2>
         </div>
+        <!--moved game over text off screen for now-->
+        <h1 id="gameOver" style="position: absolute; text-align: center; width: 403px; bottom: -25px; left: 45%; padding-bottom: 20%;"></h1>
+    </div>
+
+    <div style="left: 5%; position: relative; bottom: 70%;">
+    <marquee id="winner"  behavior="scroll" direction="left" style="font-size: 30pt; top: -600px;"></marquee>
     </div>
 
 <script>
@@ -132,6 +138,16 @@
             startGameIfLoaded();
         }
     }
+
+    function winnerBanner(){
+        let x = document.getElementById("winner");
+        if(x.style.display === "none"){
+            x.style.display = "block"
+        }else{
+            x.style.display = "block"
+        }
+    }
+    // winnerBanner();
 
 </script>
 
