@@ -1,3 +1,4 @@
+let startGameIfLoaded;
 
 window.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById("renderCanvas");
@@ -121,7 +122,7 @@ window.addEventListener('DOMContentLoaded', function () {
             crystal.dispose();
 
             game.resources = resources;
-            startGameIfAllAssetsLoaded(game);
+            onGameAssetsLoaded(game);
         };
     };
 
@@ -153,7 +154,7 @@ window.addEventListener('DOMContentLoaded', function () {
             model.dispose();
 
             game.characters = characters;
-            startGameIfAllAssetsLoaded(game);
+            onGameAssetsLoaded(game);
         };
     };
 
@@ -161,14 +162,14 @@ window.addEventListener('DOMContentLoaded', function () {
         return game.characters !== null && game.resources !== null;
     };
 
-    const startGameIfAllAssetsLoaded = function(game) {
+    const onGameAssetsLoaded = function(game) {
         if (isAllGameAssetsLoaded(game)) {
-            startGame(game);
+            game.loaded = true;
         }
     };
 
     const startGame = function(game) {
-        if (game.state !== gameStatePlay) {
+        if (game.loaded && game.state !== gameStatePlay) {
             const characters = game.characters;
             const resources = game.resources;
 
@@ -256,15 +257,15 @@ window.addEventListener('DOMContentLoaded', function () {
     };
 
     const handleGameInput = function (game, map) {
-        if (game.state !== gameStatePlay) {
-            if (map[" "]) {
-                startGameIfAllAssetsLoaded(game);
-            }
-        } else {
+        if (game.state === gameStatePlay) {
             handleCharacterInput(game.characters[0],
                 map["a"]||map["A"], map["d"]||map["D"], map["w"]||map["W"], map["s"]||map["S"], map["Shift"]);
             handleCharacterInput(game.characters[1],
                 map["j"]||map["J"], map["l"]||map["L"], map["i"]||map["I"], map["k"]||map["K"], map["Shift"]);
+        } else if (game.state === gameStateOver) {
+            if (map[" "]) {
+                startGame(game);
+            }
         }
     };
 
@@ -362,7 +363,7 @@ window.addEventListener('DOMContentLoaded', function () {
         directionalLight1.intensity = 1.5;
 
 
-        const game = { started: false, scene: scene, camera: camera, skybox: skybox, characters: null, resources: null };
+        const game = { state: gameStateMenu, loaded: false, scene: scene, camera: camera, skybox: skybox, characters: null, resources: null };
 
         const assetsManager = new BABYLON.AssetsManager(scene);
         loadCharacters([new BABYLON.Color3(1,0,1), new BABYLON.Color3(0,0,1)], assetsManager, game);
@@ -385,6 +386,10 @@ window.addEventListener('DOMContentLoaded', function () {
     };
 
     const game = createGame();
+
+    startGameIfLoaded = function(){
+        startGame(game);
+    };
 
     engine.runRenderLoop(() => {
         //render after click a start button

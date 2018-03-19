@@ -71,7 +71,7 @@
         <p>Player 1: use w,a,s,d keys to move <br> W = up <br> A = left <br>  S = down <br> D = right</p>
         <p>Player 2: use i,j,k,l keys to move <br> I = up <br> J = left <br>  K = down <br> L = right</p>
 
-        <button onclick="hide()">Start Game</button>
+        <button onclick="instructionToggle()">Start Game</button>
     </div>
 
 
@@ -97,12 +97,13 @@
     </div>
 
 <script>
-    function hide() {
+    function instructionToggle() {
         let x = document.getElementById("startGame");
         if (x.style.display === "none") {
             x.style.display = "block";
         } else {
             x.style.display = "none";
+            startGameIfLoaded();
         }
     }
 </script>
