@@ -31,7 +31,7 @@ window.addEventListener('DOMContentLoaded', function () {
     const gameStatePlay = 1;
     const gameStateOver = 2;
     const planetRadius = 150;
-    const resourceAmount = 12;
+    const resourceAmount = 1;
     const playerCount = 2;
 
 
@@ -168,7 +168,7 @@ window.addEventListener('DOMContentLoaded', function () {
     };
 
     const startGame = function(game) {
-        if (!game.started) {
+        if (game.state !== gameStatePlay) {
             const characters = game.characters;
             const resources = game.resources;
 
@@ -204,13 +204,13 @@ window.addEventListener('DOMContentLoaded', function () {
             document.getElementById("winner").innerText = "";
             document.getElementById("gameOver").innerText = "";
             document.getElementById("playAgain").innerText = "";
-            game.started = true;
+            game.state = gameStatePlay
         }
     };
 
     const stopGame = function (game) {
-        if (game.started) {
-            game.started = false;
+        if (game.state === gameStatePlay) {
+            game.state = gameStateOver;
 
             let winner = null;
 
@@ -256,7 +256,7 @@ window.addEventListener('DOMContentLoaded', function () {
     };
 
     const handleGameInput = function (game, map) {
-        if (!game.started) {
+        if (game.state !== gameStatePlay) {
             if (map[" "]) {
                 startGameIfAllAssetsLoaded(game);
             }
@@ -272,7 +272,7 @@ window.addEventListener('DOMContentLoaded', function () {
         // sets skybox to camera so u cant zoom past skybox
         game.skybox.position = game.camera.position;
 
-        if (game.started) {
+        if (game.state === gameStatePlay) {
             const characters = game.characters;
             const resources = game.resources;
 
