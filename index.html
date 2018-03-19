@@ -18,7 +18,7 @@
             color: #ccd56a;
             letter-spacing: .1em;
         }
-        .container {
+        #container {
             position: absolute;
             height: 120px;
             width: 100%;
@@ -30,6 +30,7 @@
             justify-content: space-around;
             display: flex;
             flex-direction: column;
+
         }
         button{
             color: #e0ff07;
@@ -58,6 +59,24 @@
         p{
             font-size: 17pt;
         }
+        /*#winner, marquee{*/
+            /*text-align: left;*/
+            /*font-size: 36px;*/
+            /*display: flex;*/
+            /*right: -400px;*/
+            /*top: 650px;*/
+        /*}*/
+        #playAgain{
+            text-align: left;
+            font-size: 36px;
+            display: flex;
+            right: -400px;
+            top: 700px;
+        }
+        #score, #score2{
+            display: none;
+        }
+
     </style>
 </head>
 <body>
@@ -71,41 +90,49 @@
         <p>Player 1: use w,a,s,d keys to move <br> W = up <br> A = left <br>  S = down <br> D = right</p>
         <p>Player 2: use i,j,k,l keys to move <br> I = up <br> J = left <br>  K = down <br> L = right</p>
 
+
+        <marquee behavior="scroll" direction="left">start the game -- love trump</marquee>
         <button onclick="instructionToggle()">Start Game</button>
     </div>
 
 
 
 
-    <div class="container">
-        <div style="left: 450px; position: absolute; top: 10px;">
+    <div id="container">
+        <div id="score" style="left: 450px; position: absolute; top: 10px;">
             <p style="position: absolute; left: -403px; top: -13px; font-size: 20px; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Player 1 Score:</p>
             <p id="p0score" style="position: absolute; left: -200px; top: -13px; font-size: 21px; color: #ccd56a;">0</p>
         </div>
-        <div style="left: 450px; position: absolute; top: 50px;">
+        <div id="score2" style="left: 450px; position: absolute; top: 50px;">
             <p style="position: absolute; left: -403px; top: -13px; font-size: 20px; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Player 2 Score:</p>
             <p id="p1score" style="position: absolute; left: -195px; top: -13px; font-size: 21px; color: #ccd56a;">0</p>
-        </div>
 
-        <div style="left: 450px; position: absolute; top: 50px;">
             <p style="position: absolute; left: -403px; top: 23px; font-size: 20px; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Remaining:</p>
             <p id="leftOver" style="position: absolute; left: -260px; top: 23px; font-size: 21px; color: #ccd56a;">0</p>
             <h1 id="gameOver" style="position: absolute; text-align: center; font-size: 36px; color: #ccd56a; width: 403px; bottom: -25px; left: 45%;"></h1>
-            <h1 id="winner" style="position: absolute; text-align: center; font-size: 36px; color: #ccd56a; width: 503px; top: 305px; left: 45%;"></h1>
-            <h2 id="playAgain" style="position: absolute; text-align: center; font-size: 36px; color: #ccd56a; width: 800px; top: 700px; background: transparent; border-color: transparent; left: 25%;"></h2>
+            <!--<h1 id="winner" style="position: absolute; font-size: 36px; color: #ccd56a; width: 503px;"></h1>-->
+            <marquee id="winner" behavior="scroll" direction="left"></marquee>
+            <h2 id="playAgain" style="position: absolute; color: #ccd56a; width: 800px;  background: transparent; border-color: transparent;"></h2>
         </div>
     </div>
 
 <script>
     function instructionToggle() {
         let x = document.getElementById("startGame");
-        if (x.style.display === "none") {
+        let y = document.getElementById("score");
+        let z = document.getElementById("score2");
+        if (x.style.display === "none" && y.style.display === "none" && z.style.display === "none") {
             x.style.display = "block";
+            y.style.display = "block";
+            z.style.display = "block";
         } else {
             x.style.display = "none";
+            y.style.display = "block";
+            z.style.display = "block";
             startGameIfLoaded();
         }
     }
+
 </script>
 
 </body>
