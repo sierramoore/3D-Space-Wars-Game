@@ -13,6 +13,11 @@
             /*justify-content: space-between;*/
             /*align-items: center;*/
         /*}*/
+        *{
+            font-family: 'Orbitron', sans-serif;
+            color: #ccd56a;
+            letter-spacing: .1em;
+        }
         .container {
             position: absolute;
             height: 120px;
@@ -26,29 +31,81 @@
             display: flex;
             flex-direction: column;
         }
+        button{
+            color: #e0ff07;
+            font-size: 30px;
+            text-align: center;
+            width: 300px;
+            align-items: center;
+            background: rgba(0, 100, 200, 0.8);
+            opacity: 0.6;
+            padding: 10px;
+        }
+        h1{
+            color: #ccd56a;
+            font-size: 30pt;
+        }
+        h2{
+            font-size: 20pt;
+            text-decoration: underline;
+        }
+        h3{
+            font-size: 20pt;
+        }
+        h4{
+            font-size: 19pt;
+        }
+        p{
+            font-size: 17pt;
+        }
     </style>
 </head>
 <body>
 
     <canvas id="renderCanvas" tabindex="0" ></canvas>
+    <div id="startGame" style="left: 5%; position: relative; bottom: 80%;">
+        <h1 style="">Space Wars</h1>
+        <h2>Instructions</h2>
+        <h3>First player to capture the most resources of all WINS!<br>
+            <small>- Beware a player can also steal your resources -</small></h3>
+        <p>Player 1: use w,a,s,d keys to move <br> W = up <br> A = left <br>  S = down <br> D = right</p>
+        <p>Player 2: use i,j,k,l keys to move <br> I = up <br> J = left <br>  K = down <br> L = right</p>
+
+        <button onclick="hide()">Start Game</button>
+    </div>
+
+
+
+
     <div class="container">
         <div style="left: 450px; position: absolute; top: 10px;">
-            <p style="position: absolute; left: -403px; top: -13px; font-size: 20px; font-family: 'Orbitron', sans-serif; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Player 1 Score:</p>
-            <p id="p0score" style="position: absolute; left: -220px; top: -13px; font-size: 21px; font-family: 'Orbitron',sans-serif; color: #ccd56a;">0</p>
+            <p style="position: absolute; left: -403px; top: -13px; font-size: 20px; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Player 1 Score:</p>
+            <p id="p0score" style="position: absolute; left: -200px; top: -13px; font-size: 21px; color: #ccd56a;">0</p>
         </div>
         <div style="left: 450px; position: absolute; top: 50px;">
-            <p style="position: absolute; left: -403px; top: -13px; font-size: 20px; font-family: 'Orbitron', sans-serif; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Player 2 Score:</p>
-            <p id="p1score" style="position: absolute; left: -220px; top: -13px; font-size: 21px; font-family: 'Orbitron',sans-serif; color: #ccd56a;">0</p>
+            <p style="position: absolute; left: -403px; top: -13px; font-size: 20px; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Player 2 Score:</p>
+            <p id="p1score" style="position: absolute; left: -195px; top: -13px; font-size: 21px; color: #ccd56a;">0</p>
         </div>
 
         <div style="left: 450px; position: absolute; top: 50px;">
-            <p style="position: absolute; left: -403px; top: 23px; font-size: 20px; font-family: 'Orbitron', sans-serif; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Remaining:</p>
-            <p id="leftOver" style="position: absolute; left: -270px; top: 23px; font-size: 21px; font-family: 'Orbitron',sans-serif; color: #ccd56a;">0</p>
-            <h1 id="gameOver" style="position: absolute; text-align: center; font-size: 36px; font-family: 'Orbitron', sans-serif; color: #ccd56a; width: 403px; bottom: -25px; left: 45%;"></h1>
-            <h1 id="winner" style="position: absolute; text-align: center; font-size: 36px; font-family: 'Orbitron', sans-serif; color: #ccd56a; width: 503px; top: 305px; left: 45%;"></h1>
-            <h2 id="playAgain" style="position: absolute; text-align: center; font-size: 36px; font-family: 'Orbitron', sans-serif; color: #ccd56a; width: 800px; top: 700px; background: transparent; border-color: transparent; left: 25%;"></h2>
+            <p style="position: absolute; left: -403px; top: 23px; font-size: 20px; width: 403px; height: 27px; color: #ccd56a; text-align: left;">Remaining:</p>
+            <p id="leftOver" style="position: absolute; left: -260px; top: 23px; font-size: 21px; color: #ccd56a;">0</p>
+            <h1 id="gameOver" style="position: absolute; text-align: center; font-size: 36px; color: #ccd56a; width: 403px; bottom: -25px; left: 45%;"></h1>
+            <h1 id="winner" style="position: absolute; text-align: center; font-size: 36px; color: #ccd56a; width: 503px; top: 305px; left: 45%;"></h1>
+            <h2 id="playAgain" style="position: absolute; text-align: center; font-size: 36px; color: #ccd56a; width: 800px; top: 700px; background: transparent; border-color: transparent; left: 25%;"></h2>
         </div>
     </div>
+
+<script>
+    function hide() {
+        let x = document.getElementById("startGame");
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+    }
+</script>
 
 </body>
 </html>

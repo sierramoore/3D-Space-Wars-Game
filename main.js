@@ -27,6 +27,9 @@ window.addEventListener('DOMContentLoaded', function () {
     //////////////////////
 
 
+    const gameStateMenu = 0;
+    const gameStatePlay = 1;
+    const gameStateOver = 2;
     const planetRadius = 150;
     const resourceAmount = 12;
     const playerCount = 2;
@@ -201,7 +204,7 @@ window.addEventListener('DOMContentLoaded', function () {
             document.getElementById("winner").innerText = "";
             document.getElementById("gameOver").innerText = "";
             document.getElementById("playAgain").innerText = "";
-                game.started = true;
+            game.started = true;
         }
     };
 
@@ -310,7 +313,10 @@ window.addEventListener('DOMContentLoaded', function () {
 
     const createGame = function() {
         const scene = new BABYLON.Scene(engine);
-        // scene.enablePhysics();
+
+        const startCamera = new BABYLON.ArcRotateCamera("startCamera",  0, canvas.height * 2, 10, BABYLON.Vector3.Zero(), scene);
+        startCamera.attachControl(canvas, false);
+
 
         const camera = new BABYLON.ArcRotateCamera("Camera", 0, canvas.height/2, 10, BABYLON.Vector3.Zero(), scene);
         camera.attachControl(canvas, false);
@@ -347,6 +353,8 @@ window.addEventListener('DOMContentLoaded', function () {
         ambientLight.specular = new BABYLON.Color3(0, 0, 0);
         ambientLight.intensity = 6;
 
+
+
         const directionalLight1 = new BABYLON.DirectionalLight("light", new BABYLON.Vector3(600, 0, 600), scene);
         directionalLight1.excludedMeshes.push(skybox);
         directionalLight1.diffuse = new BABYLON.Color3(1, 1, 1);
@@ -379,6 +387,7 @@ window.addEventListener('DOMContentLoaded', function () {
     const game = createGame();
 
     engine.runRenderLoop(() => {
+        //render after click a start button
         game.scene.render();
     });
 });
