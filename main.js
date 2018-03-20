@@ -32,7 +32,7 @@ window.addEventListener('DOMContentLoaded', function () {
     const gameStatePlay = 1;
     const gameStateOver = 2;
     const planetRadius = 150;
-    const resourceAmount = 1;
+    const resourceAmount = 10;
     const playerCount = 2;
 
 
@@ -127,6 +127,8 @@ window.addEventListener('DOMContentLoaded', function () {
     };
 
     const loadCharacters = function (colors, assetsManager, game) {
+        // let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/miku-babylon/", "miku.babylon");
+        // let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/lion-cub-babylon/", "lion-cub.babylon");
         let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/trump/", "trump.babylon");
         meshTask.onSuccess = function (task) {
             const model = task.loadedMeshes[0];
@@ -226,7 +228,7 @@ window.addEventListener('DOMContentLoaded', function () {
             }
 
             document.getElementById("gameOver").innerText = "Game Over";
-            document.getElementById("winner").innerText = "Player " + winner.logic.name + " Wins";
+            document.getElementById("winner").innerText = winner.logic.name + " Wins";
             document.getElementById("playAgain").innerText = "Press Space Bar To Play Again";
         }
     };
