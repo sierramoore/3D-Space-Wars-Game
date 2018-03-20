@@ -1,4 +1,5 @@
 let startGameIfLoaded;
+console.log("Welcome to Space Wars");
 
 window.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById("renderCanvas");
@@ -125,7 +126,7 @@ window.addEventListener('DOMContentLoaded', function () {
             onGameAssetsLoaded(game);
         };
     };
-    
+
     const loadCharacters = function (attributes, assetsManager, game) {
         //guarantees the space in which the character will be loaded
         game.characters = [];
@@ -147,7 +148,7 @@ window.addEventListener('DOMContentLoaded', function () {
                 model.parent = character;
                 model.rotation.y = Math.PI;
 
-                character.logic = {score: 0, color: attributes[i].color, name: "Player " + (i + 1)};
+                character.logic = {score: 0, color: attributes[i].color, name: attributes[i].name};
                 game.characters[i] = character;
 
                 onGameAssetsLoaded(game);
@@ -337,15 +338,28 @@ window.addEventListener('DOMContentLoaded', function () {
 
         const planet = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: planetRadius * 2}, scene);
         // createAxis(200, scene).parent = planet;
-        planet.rotation.y = -2;
+        // planet.rotation.y = -2;
         const planetMtl = new BABYLON.StandardMaterial("planet", scene);
         planetMtl.diffuseTexture = new BABYLON.Texture("textures/planet/moon.jpg", scene);
         planetMtl.bumpTexture = new BABYLON.Texture("textures/planet/moon_NRM.png", scene);
         planetMtl.specularTexture = new BABYLON.Texture("textures/planet/moon_SPEC.png", scene);
         planet.material = planetMtl;
 
+        const earth = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: planetRadius * 6}, scene);
+        // earth.position.x = 1500;
+        earth.position.z = 3000;
+        earth.position.y = 200;
+        earth.rotation.x = 900;
+        earth.rotation.z = -1500;
+        const earthMtl = new BABYLON.StandardMaterial("earth", scene);
+        earthMtl.diffuseTexture = new BABYLON.Texture("textures/earth/earth.jpg", scene);
+        earthMtl.bumpTexture = new BABYLON.Texture("textures/earth/earth_NRM.png", scene);
+        earthMtl.specularTexture = new BABYLON.Texture("textures/earth/earth_SPEC.png", scene);
+        earth.material = earthMtl;
+
+
         camera.setTarget(skybox);
-        camera.lowerRadiusLimit = 350;
+        camera.lowerRadiusLimit = 3500;
         camera.upperRadiusLimit = 5000;
 
         const ambientLight = new BABYLON.HemisphericLight('ambient light bob', new BABYLON.Vector3(0,0,0), scene);
@@ -372,13 +386,15 @@ window.addEventListener('DOMContentLoaded', function () {
                 model: "queen",
                 color: new BABYLON.Color3(1, 0, 0),
                 scale: 10,
-                pivot: new BABYLON.Vector3(0, 0, 0)
+                pivot: new BABYLON.Vector3(0, 0, 0),
+                name: "Princess"
             },
             {
                 model: "trump",
                 color: new BABYLON.Color3(0, 0, 1),
                 scale: 20,
-                pivot: new BABYLON.Vector3(-0.24, 0, 0)
+                pivot: new BABYLON.Vector3(-0.24, 0, 0),
+                name: "Trump"
             }
         ];
 
