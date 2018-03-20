@@ -33,7 +33,7 @@ window.addEventListener('DOMContentLoaded', function () {
     const gameStatePlay = 1;
     const gameStateOver = 2;
     const planetRadius = 150;
-    const resourceAmount = 1;
+    const resourceAmount = 10;
     const playerCount = 2;
 
 
@@ -322,7 +322,7 @@ window.addEventListener('DOMContentLoaded', function () {
         // startCamera.attachControl(canvas, false);
 
 
-        const camera = new BABYLON.ArcRotateCamera("Camera", 0, canvas.height/2, 10, BABYLON.Vector3.Zero(), scene);
+        const camera = new BABYLON.ArcRotateCamera("Camera", 350, canvas.height/2, 10, BABYLON.Vector3.Zero(), scene);
         camera.attachControl(canvas, false);
         camera.lowerRadiusLimit = 150;
         camera.useFramingBehavior = true;
@@ -347,15 +347,20 @@ window.addEventListener('DOMContentLoaded', function () {
 
         const earth = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: planetRadius * 6}, scene);
         // earth.position.x = 1500;
-        earth.position.z = 3000;
-        earth.position.y = 200;
+        earth.position.z = -2500;
+        earth.position.y = 900;
         earth.rotation.x = 900;
-        earth.rotation.z = -1500;
+        // earth.rotation.z = -1500;
         const earthMtl = new BABYLON.StandardMaterial("earth", scene);
         earthMtl.diffuseTexture = new BABYLON.Texture("textures/earth/earth.jpg", scene);
         earthMtl.bumpTexture = new BABYLON.Texture("textures/earth/earth_NRM.png", scene);
         earthMtl.specularTexture = new BABYLON.Texture("textures/earth/earth_SPEC.png", scene);
         earth.material = earthMtl;
+
+        scene.registerBeforeRender(function () {
+            earth.rotation.y += 0.001;
+        });
+
 
 
         camera.setTarget(skybox);
