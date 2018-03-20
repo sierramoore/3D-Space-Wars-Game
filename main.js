@@ -33,7 +33,7 @@ window.addEventListener('DOMContentLoaded', function () {
     const gameStatePlay = 1;
     const gameStateOver = 2;
     const planetRadius = 150;
-    const resourceAmount = 10;
+    const resourceAmount = 7;
     const playerCount = 2;
 
 
@@ -47,7 +47,7 @@ window.addEventListener('DOMContentLoaded', function () {
     };
 
     const canCapture = function(character, resource) {
-        return 300 >= distanceSqr(character, resource);
+        return 400 >= distanceSqr(character, resource);
     };
 
     const canSee = function(character, resource) {
@@ -61,9 +61,10 @@ window.addEventListener('DOMContentLoaded', function () {
     };
 
     function randomSpherePoint(radius){
-        if (radius === undefined) {
-            radius = 1;
-        }
+        // if (radius === undefined) {
+        //     radius = 1;
+        // }
+        radius = 300;
         let u = Math.random();
         let v = Math.random();
         let theta = 2 * Math.PI * u;
@@ -349,7 +350,8 @@ window.addEventListener('DOMContentLoaded', function () {
         // earth.position.x = 1500;
         earth.position.z = -2500;
         earth.position.y = 900;
-        earth.rotation.x = 900;
+
+        earth.rotation.x = Math.PI;
         // earth.rotation.z = -1500;
         const earthMtl = new BABYLON.StandardMaterial("earth", scene);
         earthMtl.diffuseTexture = new BABYLON.Texture("textures/earth/earth.jpg", scene);
@@ -360,7 +362,6 @@ window.addEventListener('DOMContentLoaded', function () {
         scene.registerBeforeRender(function () {
             earth.rotation.y += 0.001;
         });
-
 
 
         camera.setTarget(skybox);
