@@ -32,7 +32,7 @@ window.addEventListener('DOMContentLoaded', function () {
     const gameStatePlay = 1;
     const gameStateOver = 2;
     const planetRadius = 150;
-    const resourceAmount = 10;
+    const resourceAmount = 1;
     const playerCount = 2;
 
 
@@ -125,43 +125,46 @@ window.addEventListener('DOMContentLoaded', function () {
             onGameAssetsLoaded(game);
         };
     };
+    
+    const loadCharacters = function (attributes, assetsManager, game) {
+        //guarantees the space in which the character will be loaded
+        game.characters = [];
+        game.characters.length = attributes.length;
 
-    const loadCharacters = function (colors, assetsManager, game) {
-        // let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/miku-babylon/", "miku.babylon");
-        // let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/lion-cub-babylon/", "lion-cub.babylon");
-        let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/trump/", "trump.babylon");
-        meshTask.onSuccess = function (task) {
-            const model = task.loadedMeshes[0];
-            model.setPivotPoint(new BABYLON.Vector3(-0.24,0,0), BABYLON.Space.LOCAL);
-            model.scaling = new BABYLON.Vector3(15, 15, 15);
-
-            const characters = [];
-
-            for (let i = 0; i < colors.length; i++) {
-                //charaterRoot is the inner basis in the sphere on which the charater moves
+        for(let i=0; i < attributes.length; i++){
+            let meshTask = assetsManager.addMeshTask("load_meshes", "", "meshes/" + attributes[i].model + "/", attributes[i].model + ".babylon");
+            meshTask.onSuccess = function (task) {
                 const characterRoot = new BABYLON.TransformNode("root");
                 characterRoot.rotation.x = -Math.PI / 2;
 
                 const character = new BABYLON.MeshBuilder.CreateSphere('charater', {diameter: .1}, game.scene);
                 character.parent = characterRoot;
+                character.position.y = planetRadius;
 
-                // createAxis(20, game.scene).parent = character;
-                const characterModel = model.clone("character_" + i, character);
-                characterModel.rotation.y = Math.PI;
+                const model = task.loadedMeshes[0];
+                model.setPivotPoint(attributes[i].pivot, BABYLON.Space.LOCAL);
+                model.scaling = new BABYLON.Vector3(attributes[i].scale, attributes[i].scale, attributes[i].scale);
+                model.parent = character;
+                model.rotation.y = Math.PI;
 
-                character.logic = {score: 0, color: colors[i], name: "Player " + [i + 1]};
-                characters.push(character);
-            }
+                character.logic = {score: 0, color: attributes[i].color, name: "Player " + (i + 1)};
+                game.characters[i] = character;
 
-            model.dispose();
-
-            game.characters = characters;
-            onGameAssetsLoaded(game);
-        };
+                onGameAssetsLoaded(game);
+            };
+        }
     };
 
     const isAllGameAssetsLoaded = function(game) {
-        return game.characters !== null && game.resources !== null;
+        if (game.resources === null)
+            return false;
+
+        for (let i = 0; i < game.characters.length; ++i) {
+            if (game.characters[i] === undefined)
+                return false;
+        }
+
+        return true;
     };
 
     const onGameAssetsLoaded = function(game) {
@@ -178,12 +181,8 @@ window.addEventListener('DOMContentLoaded', function () {
             for(let i=0; i < characters.length; i++) {
                 const character = characters[i];
                 character.parent.rotation.x = -Math.PI / 2;
-                character.parent.rotation.y = 0;
+                character.parent.rotation.y = Math.PI/4 * i;
                 character.parent.rotation.z = 0;
-
-                character.position.x = i * 35;
-                character.position.z = 0;
-                character.position.y = planetRadius;
 
                 character.logic.score = 0;
             }
@@ -368,7 +367,22 @@ window.addEventListener('DOMContentLoaded', function () {
         const game = { state: gameStateMenu, loaded: false, scene: scene, camera: camera, skybox: skybox, planet: planet, characters: null, resources: null };
 
         const assetsManager = new BABYLON.AssetsManager(scene);
-        loadCharacters([new BABYLON.Color3(1,0,1), new BABYLON.Color3(0,0,1)], assetsManager, game);
+        const attributes = [
+            {
+                model: "queen",
+                color: new BABYLON.Color3(1, 0, 0),
+                scale: 10,
+                pivot: new BABYLON.Vector3(0, 0, 0)
+            },
+            {
+                model: "trump",
+                color: new BABYLON.Color3(0, 0, 1),
+                scale: 20,
+                pivot: new BABYLON.Vector3(-0.24, 0, 0)
+            }
+        ];
+
+        loadCharacters(attributes, assetsManager, game);
         loadResources(resourceAmount, assetsManager, game);
         assetsManager.load();
 
