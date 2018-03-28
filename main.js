@@ -3,6 +3,7 @@ console.log("Welcome to Space Wars");
 
 window.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById("renderCanvas");
+
     const engine = new BABYLON.Engine(canvas, true);
 
     window.addEventListener("resize", function () { // for smooth resizing
@@ -318,6 +319,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
     const createGame = function() {
         const scene = new BABYLON.Scene(engine);
+        const vrHelper = scene.createDefaultVRExperience();
 
         // const startCamera = new BABYLON.ArcRotateCamera("startCamera",  0, canvas.height * 2, 10, BABYLON.Vector3.Zero(), scene);
         // startCamera.attachControl(canvas, false);
