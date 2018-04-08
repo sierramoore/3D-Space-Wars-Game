@@ -3,7 +3,6 @@ console.log("Welcome to Space Wars");
 
 window.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById("renderCanvas");
-
     const engine = new BABYLON.Engine(canvas, true);
 
     window.addEventListener("resize", function () { // for smooth resizing
@@ -205,7 +204,7 @@ window.addEventListener('DOMContentLoaded', function () {
             }
 
             game.camera.setTarget(game.planet);
-            game.camera.setPosition(new BABYLON.Vector3(0,500,-50));
+            //game.camera.setPosition(new BABYLON.Vector3(0,500,-50));
 
             document.getElementById("winner").innerText = "";
             document.getElementById("gameOver").innerText = "";
@@ -302,6 +301,7 @@ window.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
+
             let scoreSum = 0;
 
             for(let i=0; i < characters.length; i++) {
@@ -310,9 +310,9 @@ window.addEventListener('DOMContentLoaded', function () {
             }
 
             if (scoreSum === resourceAmount) {
-               stopGame(game);
+                stopGame(game);
             }
-            
+
             document.getElementById('leftOver').innerText = resources.length - scoreSum;
         }
     };
@@ -320,25 +320,13 @@ window.addEventListener('DOMContentLoaded', function () {
     const createGame = function() {
         const scene = new BABYLON.Scene(engine);
 
-        // const startCamera = new BABYLON.ArcRotateCamera("startCamera",  0, canvas.height * 2, 10, BABYLON.Vector3.Zero(), scene);
-        // startCamera.attachControl(canvas, false);
-
 
         const camera = new BABYLON.ArcRotateCamera("Camera", 350, canvas.height/2, 10, BABYLON.Vector3.Zero(), scene);
-        camera.attachControl(canvas, true);
+        camera.attachControl(canvas, false);
         camera.lowerRadiusLimit = 150;
         camera.useFramingBehavior = true;
 
-
         // const vrHelper = scene.createDefaultVRExperience();
-        // vrHelper.onControllerMeshLoaded.add((webVRController)=>{
-        //     let controllerMesh = webVRController.mesh;
-        //     webVRController.onTriggerStateChangedObservable.add(()=>{
-        //         // Trigger pressed event
-        //     });
-        // });
-
-
 
         const skybox = BABYLON.Mesh.CreateBox("skybox", 10000.0, scene);
         const skyboxMaterial = new BABYLON.StandardMaterial("skybox", scene);
@@ -358,23 +346,13 @@ window.addEventListener('DOMContentLoaded', function () {
         planetMtl.specularTexture = new BABYLON.Texture("textures/planet/moon_SPEC.png", scene);
         planet.material = planetMtl;
 
-        // vrHelper.enableTeleportation({floorMeshName: "sphere"});
-        // vrHelper.teleportationEnabled = true;
-
-        const earth = BABYLON.MeshBuilder.CreateSphere('sphere2', {diameter: planetRadius * 6}, scene);
-        // earth.position.x = 500;
-        earth.position.z = -2000;
-        earth.position.y = -1500;
+        const earth = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: planetRadius * 6}, scene);
+        earth.position.z = 2500;
+        earth.position.y = -700;
 
         earth.rotation.x = Math.PI;
+        earth.rotation.y = 1;
 
-        // earth.position.z = -2500;
-        // earth.position.y = 900;
-        // earth.rotation.x = 900;
-        // earth.rotation.x = Math.PI;
-        // earth.position.y = 900;
-
-        // earth.rotation.z = -1500;
         const earthMtl = new BABYLON.StandardMaterial("earth", scene);
         earthMtl.diffuseTexture = new BABYLON.Texture("textures/earth/earth.jpg", scene);
         earthMtl.bumpTexture = new BABYLON.Texture("textures/earth/earth_NRM.png", scene);
@@ -383,6 +361,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
         scene.registerBeforeRender(function () {
             earth.rotation.y += 0.001;
+            //planet.rotation.y += 0.001;
         });
 
 
@@ -456,4 +435,3 @@ window.addEventListener('DOMContentLoaded', function () {
         game.scene.render();
     });
 });
-
