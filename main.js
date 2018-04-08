@@ -319,16 +319,26 @@ window.addEventListener('DOMContentLoaded', function () {
 
     const createGame = function() {
         const scene = new BABYLON.Scene(engine);
-        const vrHelper = scene.createDefaultVRExperience();
 
         // const startCamera = new BABYLON.ArcRotateCamera("startCamera",  0, canvas.height * 2, 10, BABYLON.Vector3.Zero(), scene);
         // startCamera.attachControl(canvas, false);
 
 
         const camera = new BABYLON.ArcRotateCamera("Camera", 350, canvas.height/2, 10, BABYLON.Vector3.Zero(), scene);
-        camera.attachControl(canvas, false);
+        camera.attachControl(canvas, true);
         camera.lowerRadiusLimit = 150;
         camera.useFramingBehavior = true;
+
+
+        // const vrHelper = scene.createDefaultVRExperience();
+        // vrHelper.onControllerMeshLoaded.add((webVRController)=>{
+        //     let controllerMesh = webVRController.mesh;
+        //     webVRController.onTriggerStateChangedObservable.add(()=>{
+        //         // Trigger pressed event
+        //     });
+        // });
+
+
 
         const skybox = BABYLON.Mesh.CreateBox("skybox", 10000.0, scene);
         const skyboxMaterial = new BABYLON.StandardMaterial("skybox", scene);
@@ -348,12 +358,22 @@ window.addEventListener('DOMContentLoaded', function () {
         planetMtl.specularTexture = new BABYLON.Texture("textures/planet/moon_SPEC.png", scene);
         planet.material = planetMtl;
 
-        const earth = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: planetRadius * 6}, scene);
-        // earth.position.x = 1500;
-        earth.position.z = -2500;
-        earth.position.y = 900;
+        // vrHelper.enableTeleportation({floorMeshName: "sphere"});
+        // vrHelper.teleportationEnabled = true;
+
+        const earth = BABYLON.MeshBuilder.CreateSphere('sphere2', {diameter: planetRadius * 6}, scene);
+        // earth.position.x = 500;
+        earth.position.z = -2000;
+        earth.position.y = -1500;
 
         earth.rotation.x = Math.PI;
+
+        // earth.position.z = -2500;
+        // earth.position.y = 900;
+        // earth.rotation.x = 900;
+        // earth.rotation.x = Math.PI;
+        // earth.position.y = 900;
+
         // earth.rotation.z = -1500;
         const earthMtl = new BABYLON.StandardMaterial("earth", scene);
         earthMtl.diffuseTexture = new BABYLON.Texture("textures/earth/earth.jpg", scene);
