@@ -205,7 +205,7 @@ window.addEventListener('DOMContentLoaded', function () {
             }
 
             game.camera.setTarget(game.planet);
-            //game.camera.setPosition(new BABYLON.Vector3(0,500,-50));
+            game.camera.setPosition(new BABYLON.Vector3(0,500,-50));
 
             document.getElementById("winner").innerText = "";
             document.getElementById("gameOver").innerText = "";
