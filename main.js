@@ -301,7 +301,6 @@ window.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-
             let scoreSum = 0;
 
             for(let i=0; i < characters.length; i++) {
@@ -320,13 +319,14 @@ window.addEventListener('DOMContentLoaded', function () {
     const createGame = function() {
         const scene = new BABYLON.Scene(engine);
 
+        // const startCamera = new BABYLON.ArcRotateCamera("startCamera",  0, canvas.height * 2, 10, BABYLON.Vector3.Zero(), scene);
+        // startCamera.attachControl(canvas, false);
+
 
         const camera = new BABYLON.ArcRotateCamera("Camera", 350, canvas.height/2, 10, BABYLON.Vector3.Zero(), scene);
         camera.attachControl(canvas, false);
         camera.lowerRadiusLimit = 150;
         camera.useFramingBehavior = true;
-
-        // const vrHelper = scene.createDefaultVRExperience();
 
         const skybox = BABYLON.Mesh.CreateBox("skybox", 10000.0, scene);
         const skyboxMaterial = new BABYLON.StandardMaterial("skybox", scene);
@@ -347,12 +347,12 @@ window.addEventListener('DOMContentLoaded', function () {
         planet.material = planetMtl;
 
         const earth = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: planetRadius * 6}, scene);
-        earth.position.z = 2500;
-        earth.position.y = -700;
+        // earth.position.x = 1500;
+        earth.position.z = -2500;
+        earth.position.y = 400;
 
         earth.rotation.x = Math.PI;
-        earth.rotation.y = 1;
-
+        // earth.rotation.z = -1500;
         const earthMtl = new BABYLON.StandardMaterial("earth", scene);
         earthMtl.diffuseTexture = new BABYLON.Texture("textures/earth/earth.jpg", scene);
         earthMtl.bumpTexture = new BABYLON.Texture("textures/earth/earth_NRM.png", scene);
@@ -361,7 +361,6 @@ window.addEventListener('DOMContentLoaded', function () {
 
         scene.registerBeforeRender(function () {
             earth.rotation.y += 0.001;
-            //planet.rotation.y += 0.001;
         });
 
 
@@ -435,3 +434,5 @@ window.addEventListener('DOMContentLoaded', function () {
         game.scene.render();
     });
 });
+
+
