@@ -349,7 +349,7 @@ window.addEventListener('DOMContentLoaded', function () {
         const earth = BABYLON.MeshBuilder.CreateSphere('sphere', {diameter: planetRadius * 6}, scene);
         // earth.position.x = 1500;
         earth.position.z = -2500;
-        earth.position.y = 400;
+        earth.position.y = 900;
 
         earth.rotation.x = Math.PI;
         // earth.rotation.z = -1500;
